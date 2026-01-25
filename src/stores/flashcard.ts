@@ -126,8 +126,8 @@ export const useFlashcardStore = defineStore('flashcard', () => {
       
       for (let i = words.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1))
-        const temp = words[i]
-        words[i] = words[j]
+        const temp = words[i]!
+        words[i] = words[j]!
         words[j] = temp
       }
       
@@ -168,8 +168,8 @@ export const useFlashcardStore = defineStore('flashcard', () => {
     const shuffled = [...wrongWords.value]
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
-      const temp = shuffled[i]
-      shuffled[i] = shuffled[j]
+      const temp = shuffled[i]!
+      shuffled[i] = shuffled[j]!
       shuffled[j] = temp
     }
     
@@ -358,8 +358,8 @@ export const useFlashcardStore = defineStore('flashcard', () => {
       // Fisher-Yatesシャッフル
       for (let i = words.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1))
-        const temp = words[i]
-        words[i] = words[j]
+        const temp = words[i]!
+        words[i] = words[j]!
         words[j] = temp
       }
       
