@@ -242,10 +242,12 @@ h1 {
 
   .card-action {
     margin-left: 0;
+    display: flex;
+    gap: 8px;
   }
 
   .card-action .v-btn {
-    width: 100%;
+    flex: 1;
   }
 }
 </style>
