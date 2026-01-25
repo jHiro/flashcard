@@ -307,3 +307,8 @@ rankings/{categoryId}/
 - [Firebase ドキュメント](https://firebase.google.com/docs)
 - [Pinia ドキュメント](https://pinia.vuejs.org/)
 - [Firestore セキュリティルール](https://firebase.google.com/docs/firestore/security/get-started)
+
+---
+
+## コミットメッセージ
+**コミットメッセージも必ず日本語で記載すること**

@@ -9,15 +9,17 @@ import {
   query,
   where,
   updateDoc,
+  setDoc,
   serverTimestamp,
 } from 'firebase/firestore'
 
 export interface Word {
   id: string
   categoryId: string
-  term: string
-  definition: string
-  examples: string[]
+  question: string
+  answer: string
+  hint?: string
+  examples?: string[]
   order: number
   createdBy: string
   createdAt: any
@@ -155,7 +157,8 @@ export const useFlashcardStore = defineStore('flashcard', () => {
     userAnswer?: string
   ) => {
     try {
-      const progressRef = doc(db, `progress/${userId}/${categoryId}`)
+      // progress/{userId}/categories/{categoryId} というパスに保存
+      const progressRef = doc(db, `progress/${userId}/categories/${categoryId}`)
 
       // 現在のカテゴリと問題数を取得
       const category = categories.value.find((c) => c.id === categoryId)
@@ -201,11 +204,13 @@ export const useFlashcardStore = defineStore('flashcard', () => {
       )
       currentProgress.lastReviewedAt = serverTimestamp()
 
-      // Firestoreに保存
-      await updateDoc(progressRef, currentProgress)
+      // Firestoreに保存（存在しない場合は作成、存在する場合は更新）
+      await setDoc(progressRef, currentProgress, { merge: true })
 
       // ローカルストアを更新
       userProgress.value[categoryId] = currentProgress
+      
+      console.log('✅ 回答を記録しました:', { wordId, isCorrect })
     } catch (error) {
       console.error('回答記録エラー:', error)
       throw error
@@ -215,7 +220,8 @@ export const useFlashcardStore = defineStore('flashcard', () => {
   // ユーザーの進捗を読込
   const loadUserProgress = async (userId: string) => {
     try {
-      const progressRef = collection(db, `progress/${userId}`)
+      // progress/{userId}/categories というサブコレクションを参照
+      const progressRef = collection(db, `progress/${userId}/categories`)
       const snapshot = await getDocs(progressRef)
       snapshot.docs.forEach((doc) => {
         userProgress.value[doc.id] = doc.data() as Progress

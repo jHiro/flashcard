@@ -13,25 +13,46 @@
       ></v-progress-circular>
 
       <v-row v-else>
-        <v-col v-for="category in flashcardStore.categories" :key="category.id" cols="12" sm="6" md="4">
+        <v-col v-for="category in flashcardStore.categories" :key="category.id" cols="12">
           <v-card
             @click="selectCategory(category.id)"
             class="category-card"
+            elevation="2"
           >
-            <v-card-title>{{ category.name }}</v-card-title>
-            <v-card-text>
-              <p><strong>科目:</strong> {{ category.subject }}</p>
-              <p><strong>難易度:</strong> {{ category.level }}</p>
-              <p><strong>問題数:</strong> {{ category.wordCount }}</p>
-              <p v-if="userProgress[category.id]">
-                <strong>正解率:</strong> {{ userProgress[category.id].completionRate }}%
-              </p>
-            </v-card-text>
-            <v-card-actions>
-              <v-btn color="primary" variant="tonal" @click="selectCategory(category.id)">
-                学習する
-              </v-btn>
-            </v-card-actions>
+            <div class="card-content">
+              <div class="card-header">
+                <v-card-title class="card-title">{{ category.name }}</v-card-title>
+                <v-chip color="primary" variant="tonal" class="ml-2">
+                  {{ category.subject }}
+                </v-chip>
+              </div>
+              <v-card-text class="card-info">
+                <div class="info-row">
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span>
+                    <span class="info-value">{{ category.level }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">問題数:</span>
+                    <span class="info-value">{{ category.wordCount }}問</span>
+                  </div>
+                  <div v-if="userProgress[category.id]" class="info-item">
+                    <span class="info-label">正解率:</span>
+                    <span class="info-value success-rate">{{ userProgress[category.id].completionRate }}%</span>
+                  </div>
+                </div>
+              </v-card-text>
+              <v-card-actions class="card-action">
+                <v-btn 
+                  color="primary" 
+                  size="large" 
+                  variant="flat"
+                  @click.stop="selectCategory(category.id)"
+                >
+                  学習する
+                </v-btn>
+              </v-card-actions>
+            </div>
           </v-card>
         </v-col>
       </v-row>
@@ -88,21 +109,109 @@ onMounted(async () => {
 
 <style scoped>
 .category-list {
-  padding: 20px 0;
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 h1 {
   font-size: 2rem;
   margin-bottom: 20px;
+  text-align: center;
 }
 
 .category-card {
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
+  margin-bottom: 16px;
+  border-radius: 12px !important;
 }
 
 .category-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.card-content {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  gap: 20px;
+}
+
+.card-header {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 200px;
+}
+
+.card-title {
+  font-size: 1.5rem !important;
+  font-weight: bold;
+  padding: 0;
+  margin: 0;
+}
+
+.card-info {
+  flex: 1;
+  padding: 0 16px;
+}
+
+.info-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-label {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.info-value {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.success-rate {
+  color: #4caf50;
+}
+
+.card-action {
+  padding: 0;
+  margin-left: auto;
+}
+
+@media (max-width: 768px) {
+  .card-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .card-header {
+    min-width: auto;
+  }
+
+  .info-row {
+    justify-content: space-between;
+  }
+
+  .card-action {
+    margin-left: 0;
+  }
+
+  .card-action .v-btn {
+    width: 100%;
+  }
 }
 </style>

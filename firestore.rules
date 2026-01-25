@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ユーザー認証のヘルパー関数
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isTeacher() {
+      // 将来的にカスタムクレームで教師ロールを判定
+      // 現在は認証済みユーザーを教師として扱う（開発用）
+      return request.auth != null;
+    }
+    
+    // カテゴリは認証済みユーザーなら誰でも読取可能、教師のみ書込
+    match /categories/{categoryId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isTeacher();
+    }
+    
+    // 問題は認証済みユーザーなら誰でも読取可能、教師のみ書込
+    match /words/{wordId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isTeacher();
+    }
+    
+    // 進捗は自分のものだけ読取・書込可能
+    match /progress/{userId} {
+      // ユーザードキュメント自体へのアクセス（現在は使用していない）
+      allow read, write: if isOwner(userId);
+      
+      // サブコレクション（カテゴリごとの進捗）
+      match /categories/{categoryId} {
+        allow read, write: if isOwner(userId);
+        
+        // サブコレクション（回答履歴）- 将来的に使用する可能性
+        match /answers/{wordId} {
+          allow read, write: if isOwner(userId);
+        }
+      }
+    }
+    
+    // ユーザー情報は自分のものだけ読取・書込可能
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    // デフォルトで全てのアクセスを拒否
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

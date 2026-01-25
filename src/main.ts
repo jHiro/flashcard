@@ -6,6 +6,7 @@ import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import 'vuetify/styles'
+import '@mdi/font/css/materialdesignicons.css'
 import router from './router'
 import { useAuthStore } from './stores/auth'
 
@@ -14,6 +15,21 @@ const pinia = createPinia()
 const vuetify = createVuetify({
   components,
   directives,
+  theme: {
+    defaultTheme: 'light',
+    themes: {
+      light: {
+        colors: {
+          primary: '#667eea',
+          secondary: '#764ba2',
+          success: '#4caf50',
+          error: '#f44336',
+          warning: '#ff9800',
+          info: '#2196f3',
+        },
+      },
+    },
+  },
 })
 
 app.use(pinia)

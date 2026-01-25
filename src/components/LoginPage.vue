@@ -1,21 +1,21 @@
 <template>
   <v-app>
-    <v-container class="fill-height" fluid>
-      <v-row class="align-center justify-center" style="height: 100vh">
-        <v-col cols="12" sm="8" md="5" lg="4">
-          <v-card class="pa-8">
-            <v-card-title class="text-center text-h4 mb-6">
-              Flashcard
-            </v-card-title>
+    <div class="login-wrapper">
+      <v-card class="login-card" elevation="12">
+        <div class="login-header">
+          <h1 class="app-title">📚 Flashcard</h1>
+          <p class="app-subtitle">学習用語チェックアプリ</p>
+        </div>
 
-            <v-card-text>
-              <v-form @submit.prevent="handleAuth">
+        <div class="login-body">
+          <v-form @submit.prevent="handleAuth">
                 <!-- エラーメッセージ -->
                 <v-alert
                   v-if="authStore.error"
                   type="error"
                   dismissible
-                  class="mb-4"
+                  class="mb-6"
+                  variant="tonal"
                 >
                   {{ authStore.error }}
                 </v-alert>
@@ -26,10 +26,12 @@
                   label="メールアドレス"
                   type="email"
                   placeholder="example@email.com"
-                  prepend-icon="mdi-email"
+                  prepend-inner-icon="mdi-email"
+                  variant="outlined"
                   class="mb-4"
                   :disabled="isLoading"
                   required
+                  density="comfortable"
                 ></v-text-field>
 
                 <!-- パスワード -->
@@ -37,12 +39,14 @@
                   v-model="password"
                   label="パスワード"
                   :type="showPassword ? 'text' : 'password'"
-                  prepend-icon="mdi-lock"
-                  :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                  @click:append="showPassword = !showPassword"
+                  prepend-inner-icon="mdi-lock"
+                  :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                  @click:append-inner="showPassword = !showPassword"
+                  variant="outlined"
                   class="mb-2"
                   :disabled="isLoading"
                   required
+                  density="comfortable"
                 ></v-text-field>
 
                 <!-- パスワード確認（サインアップ時） -->
@@ -51,61 +55,45 @@
                   v-model="passwordConfirm"
                   label="パスワード（確認）"
                   :type="showPasswordConfirm ? 'text' : 'password'"
-                  prepend-icon="mdi-lock"
-                  :append-icon="showPasswordConfirm ? 'mdi-eye' : 'mdi-eye-off'"
-                  @click:append="showPasswordConfirm = !showPasswordConfirm"
+                  prepend-inner-icon="mdi-lock"
+                  :append-inner-icon="showPasswordConfirm ? 'mdi-eye' : 'mdi-eye-off'"
+                  @click:append-inner="showPasswordConfirm = !showPasswordConfirm"
+                  variant="outlined"
                   class="mb-6"
                   :disabled="isLoading"
                   required
+                  density="comfortable"
                 ></v-text-field>
 
                 <!-- 送信ボタン -->
                 <v-btn
                   block
                   color="primary"
-                  size="large"
+                  size="x-large"
                   type="submit"
                   :loading="isLoading"
                   :disabled="!isFormValid || isLoading"
-                  class="mb-4"
+                  class="mb-4 auth-button"
                 >
                   {{ isSignup ? 'サインアップ' : 'ログイン' }}
                 </v-btn>
 
                 <!-- トグル -->
-                <div style="text-align: center">
+                <div class="text-center">
                   <v-btn
                     variant="text"
-                    size="small"
+                    size="default"
                     @click="toggleAuthMode"
                     :disabled="isLoading"
+                    class="toggle-button"
                   >
                     {{ isSignup ? 'ログインはこちら' : 'サインアップはこちら' }}
                   </v-btn>
                 </div>
               </v-form>
-            </v-card-text>
+            </div>
           </v-card>
-
-          <!-- テストアカウント情報 -->
-          <v-card class="mt-6 pa-4" variant="tonal">
-            <v-card-text>
-              <p class="text-caption font-weight-bold">テストアカウント:</p>
-              <p class="text-caption">メール: test@example.com</p>
-              <p class="text-caption">パスワード: test@example.com</p>
-              <v-btn
-                variant="text"
-                size="small"
-                @click="autofillTestAccount"
-                class="mt-2"
-              >
-                テストアカウントで試す
-              </v-btn>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-    </v-container>
+        </div>
   </v-app>
 </template>
 
@@ -164,12 +152,6 @@ const toggleAuthMode = () => {
   passwordConfirm.value = ''
 }
 
-const autofillTestAccount = () => {
-  email.value = 'test@example.com'
-  password.value = 'test@example.com'
-  passwordConfirm.value = 'test@example.com'
-}
-
 // ログイン済みならホームへリダイレクト
 onMounted(() => {
   if (authStore.isAuthenticated) {
@@ -179,5 +161,93 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* No additional styles needed */
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 450px;
+  border-radius: 20px !important;
+  overflow: hidden;
+}
+
+.login-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 40px 30px;
+  text-align: center;
+}
+
+.app-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0 0 8px 0;
+}
+
+.app-subtitle {
+  font-size: 1.05rem;
+  margin: 0;
+  opacity: 0.95;
+}
+
+.login-body {
+  padding: 40px 30px;
+}
+
+.auth-button {
+  font-size: 1.1rem;
+  font-weight: bold;
+  height: 56px !important;
+}
+
+.toggle-button {
+  text-transform: none;
+  font-size: 1rem;
+}
+
+@media (max-width: 600px) {
+  .login-wrapper {
+    padding: 15px;
+  }
+
+  .login-card {
+    max-width: 100%;
+  }
+
+  .login-header {
+    padding: 32px 24px;
+  }
+
+  .app-title {
+    font-size: 2rem;
+  }
+
+  .app-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .login-body {
+    padding: 32px 24px;
+  }
+}
+
+@media (max-width: 400px) {
+  .login-header {
+    padding: 28px 20px;
+  }
+
+  .app-title {
+    font-size: 1.75rem;
+  }
+
+  .login-body {
+    padding: 28px 20px;
+  }
+}
 </style>
