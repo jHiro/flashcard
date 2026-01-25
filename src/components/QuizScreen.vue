@@ -1,10 +1,24 @@
 <template>
   <div class="quiz-screen">
     <v-container>
-      <v-row class="mb-6">
-        <v-col cols="12">
-          <h1>{{ currentCategory?.name }}</h1>
-          <p class="subtitle">カード {{ currentWordIndex + 1 }} / {{ currentWords.length }}</p>
+      <v-row class="mb-6 align-center">
+        <v-col cols="auto">
+          <v-btn 
+            color="secondary" 
+            variant="tonal" 
+            @click="goBack"
+            icon="mdi-arrow-left"
+          >
+          </v-btn>
+        </v-col>
+        <v-col>
+          <div class="header-text">
+            <h1>{{ currentCategory?.name }}</h1>
+            <p class="subtitle">カード {{ currentWordIndex + 1 }} / {{ currentWords.length }}</p>
+          </div>
+        </v-col>
+        <v-col cols="auto">
+          <div style="width: 40px;"></div>
         </v-col>
       </v-row>
 
@@ -22,37 +36,52 @@
                 <div class="question-section">
                   <p class="question-label">問題</p>
                   <h2 class="question-term">{{ currentWord.question }}</h2>
+                  
+                  <!-- ヒントボタン -->
+                  <div v-if="currentWord.hint" class="hint-button-area">
+                    <v-btn
+                      variant="text"
+                      size="small"
+                      color="white"
+                      @click="showHint = !showHint"
+                      prepend-icon="mdi-lightbulb-outline"
+                    >
+                      {{ showHint ? 'ヒントを隠す' : 'ヒントを表示' }}
+                    </v-btn>
+                    
+                    <!-- ヒント内容 -->
+                    <div v-if="showHint" class="hint-display">
+                      <p class="hint-text-white">{{ currentWord.hint }}</p>
+                    </div>
+                  </div>
                 </div>
 
                 <v-divider class="my-6"></v-divider>
 
-                <!-- 答えを表示 -->
-                <div v-if="showAnswer" class="answer-content">
-                  <p class="answer-label">答え</p>
-                  <p class="definition">{{ currentWord.answer }}</p>
+                <!-- 答えエリア（固定高さ） -->
+                <div class="answer-area">
+                  <!-- 答えを表示 -->
+                  <div v-if="showAnswer" class="answer-content">
+                    <p class="answer-label">答え</p>
+                    <p class="definition">{{ currentWord.answer }}</p>
 
-                  <!-- ヒント -->
-                  <div v-if="currentWord.hint" class="mt-4">
-                    <p class="example-label">ヒント:</p>
-                    <p class="hint-text">{{ currentWord.hint }}</p>
+                    <!-- 例文・補足 -->
+                    <div v-if="currentWord.examples && currentWord.examples.length > 0" class="mt-4">
+                      <p class="example-label">補足:</p>
+                      <ul>
+                        <li v-for="(example, index) in currentWord.examples" :key="index">
+                          {{ example }}
+                        </li>
+                      </ul>
+                    </div>
                   </div>
 
-                  <!-- 例文・補足 -->
-                  <div v-if="currentWord.examples && currentWord.examples.length > 0" class="mt-4">
-                    <p class="example-label">補足:</p>
-                    <ul>
-                      <li v-for="(example, index) in currentWord.examples" :key="index">
-                        {{ example }}
-                      </li>
-                    </ul>
+                  <!-- 答え表示前のメッセージ -->
+                  <div v-else class="hint-content">
+                    <p class="text-center hint-message">
+                      💭 答えを考えてから「答えを表示」ボタンを押してください
+                    </p>
                   </div>
-                </div>
-
-                <!-- 答え表示前のメッセージ -->
-                <div v-else class="hint-content">
-                  <p class="text-center hint-message">
-                    💭 答えを考えてから「答えを表示」ボタンを押してください
-                  </p>
                 </div>
               </div>
             </v-card-text>
@@ -91,13 +120,6 @@
               </div>
             </v-card-actions>
           </v-card>
-
-          <!-- 戻るボタン -->
-          <div class="mt-4 text-center">
-            <v-btn color="secondary" variant="tonal" @click="goBack">
-              セット一覧に戻る
-            </v-btn>
-          </div>
         </v-col>
       </v-row>
 
@@ -126,15 +148,17 @@ const authStore = useAuthStore()
 const router = useRouter()
 
 const showAnswer = ref(false)
+const showHint = ref(false)
 
 const currentCategory = computed(() => flashcardStore.currentCategory)
 const currentWords = computed(() => flashcardStore.currentWords)
 const currentWordIndex = computed(() => flashcardStore.currentWordIndex)
 const currentWord = computed(() => flashcardStore.getCurrentWord())
 
-// カードが変わったら答えを非表示にする
+// カードが変わったら答えとヒントを非表示にする
 watch(currentWordIndex, () => {
   showAnswer.value = false
+  showHint.value = false
 })
 
 const handleAnswer = async (isCorrect: boolean) => {
@@ -191,14 +215,19 @@ onMounted(() => {
   padding: 20px 0;
 }
 
+.header-text {
+  text-align: center;
+}
+
 h1 {
   font-size: 2rem;
+  margin: 0;
 }
 
 .subtitle {
   font-size: 1.1rem;
   color: #666;
-  margin-bottom: 0;
+  margin: 4px 0 0 0;
 }
 
 .flashcard {
@@ -216,12 +245,43 @@ h1 {
   padding: 20px;
 }
 
+.answer-area {
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .question-section {
   text-align: center;
-  padding: 30px 20px;
+  padding: 30px 20px 20px 20px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 8px;
   color: white;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hint-button-area {
+  margin-top: 20px;
+  min-height: 80px;
+}
+
+.hint-display {
+  margin-top: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.hint-text-white {
+  color: white;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
 }
 
 .question-label {
@@ -242,18 +302,19 @@ h1 {
 
 .hint-content {
   text-align: center;
-  padding: 40px 20px;
+  width: 100%;
 }
 
 .hint-message {
   font-size: 1.2rem;
   color: #999;
   margin: 0;
+  padding: 40px 20px;
 }
 
 .answer-content {
   width: 100%;
-  padding: 20px;
+  align-self: flex-start;
 }
 
 .answer-label {
