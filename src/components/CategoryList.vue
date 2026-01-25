@@ -38,7 +38,7 @@
                   </div>
                   <div v-if="userProgress[category.id]" class="info-item">
                     <span class="info-label">正解率:</span>
-                    <span class="info-value success-rate">{{ userProgress[category.id].completionRate }}%</span>
+                    <span class="info-value success-rate">{{ userProgress[category.id]?.completionRate ?? 0 }}%</span>
                   </div>
                 </div>
               </v-card-text>
