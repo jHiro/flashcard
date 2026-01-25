@@ -1,7 +1,7 @@
 <template>
   <div class="quiz-screen">
-    <v-container class="pa-2">
-      <v-row class="mb-6 align-center">
+    <v-container class="pa-0">
+      <v-row class="mb-1 align-center">
         <v-col cols="auto">
           <v-btn 
             color="secondary" 
@@ -24,11 +24,11 @@
 
       <v-progress-linear
         :value="((currentWordIndex + 1) / currentWords.length) * 100"
-        class="mb-6"
+        class="mb-1"
       ></v-progress-linear>
 
       <v-row v-if="currentWord">
-        <v-col cols="12" class="pa-2">
+        <v-col cols="12" class="pa-0">
           <v-card class="flashcard" :class="{ flipped: showAnswer }">
             <v-card-text>
               <div class="card-content">
@@ -124,7 +124,7 @@
       </v-row>
 
       <v-row v-else class="justify-center">
-        <v-col cols="12" md="10" lg="8" class="pa-2">
+        <v-col cols="12" md="10" lg="8" class="pa-0">
           <v-card class="result-card" elevation="4">
             <v-card-title class="result-header">
               <h2>🎉 学習完了！</h2>
@@ -163,6 +163,17 @@
               </div>
             </v-card-text>
             <v-card-actions class="pa-4">
+              <v-btn 
+                v-if="flashcardStore.wrongWords.length > 0"
+                color="warning" 
+                size="large" 
+                block
+                @click="retryWrong"
+                prepend-icon="mdi-refresh"
+                class="mb-2"
+              >
+                間違えた問題をやり直す ({{ flashcardStore.wrongWords.length }}問)
+              </v-btn>
               <v-btn 
                 color="primary" 
                 size="large" 
@@ -283,6 +294,12 @@ const goBack = () => {
   router.back()
 }
 
+const retryWrong = () => {
+  flashcardStore.retryWrongWords()
+  showAnswer.value = false
+  showHint.value = false
+}
+
 onMounted(() => {
   if (!currentCategory.value) {
     router.push({ name: 'home' })
@@ -293,7 +310,8 @@ onMounted(() => {
 <style scoped>
 .quiz-screen {
   padding: 0;
-  padding-bottom: 88px;
+  padding-bottom: 100px;
+  min-height: 100vh;
 }
 
 .header-text {
@@ -312,7 +330,6 @@ h1 {
 }
 
 .flashcard {
-  min-height: 400px;
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease;
@@ -327,7 +344,7 @@ h1 {
 }
 
 .answer-area {
-  min-height: 200px;
+  min-height: 150px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -339,7 +356,7 @@ h1 {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 8px;
   color: white;
-  min-height: 200px;
+  min-height: 180px;
   display: flex;
   flex-direction: column;
   justify-content: center;

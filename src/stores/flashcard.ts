@@ -58,6 +58,7 @@ export const useFlashcardStore = defineStore('flashcard', () => {
   const currentWordIndex = ref(0)
   const userProgress = ref<Record<string, Progress>>({})
   const isLoading = ref(false)
+  const wrongWords = ref<Word[]>([])
 
   // すべてのカテゴリを取得
   const loadCategories = async () => {
@@ -112,12 +113,19 @@ export const useFlashcardStore = defineStore('flashcard', () => {
         where('categoryId', '==', categoryId)
       )
       const snapshot = await getDocs(q)
-      currentWords.value = snapshot.docs
-        .map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        } as Word))
-        .sort((a, b) => a.order - b.order)
+      
+      // Fisher-Yatesシャッフルアルゴリズムでランダムに並べ替え
+      const words = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      } as Word))
+      
+      for (let i = words.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [words[i], words[j]] = [words[j], words[i]]
+      }
+      
+      currentWords.value = words
 
       currentWordIndex.value = 0
     } catch (error) {
@@ -140,6 +148,24 @@ export const useFlashcardStore = defineStore('flashcard', () => {
     if (currentWordIndex.value > 0) {
       currentWordIndex.value--
     }
+  }
+
+  // 間違えた問題だけを再度学習
+  const retryWrongWords = () => {
+    if (wrongWords.value.length === 0) {
+      return
+    }
+    
+    // 間違えた問題をシャッフル
+    const shuffled = [...wrongWords.value]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    
+    currentWords.value = shuffled
+    currentWordIndex.value = 0
+    wrongWords.value = [] // リセット
   }
 
   // 現在の問題を取得
@@ -190,6 +216,14 @@ export const useFlashcardStore = defineStore('flashcard', () => {
 
       currentProgress.answers[wordId] = newAnswer
 
+      // 間違えた場合はwrongWordsに追加
+      if (!isCorrect) {
+        const wrongWord = currentWords.value.find(w => w.id === wordId)
+        if (wrongWord && !wrongWords.value.some(w => w.id === wordId)) {
+          wrongWords.value.push(wrongWord)
+        }
+      }
+
       // 正解数・不正解数を更新
       const answeredWords = Object.values(currentProgress.answers)
       currentProgress.correctCount = answeredWords.filter(
@@ -238,10 +272,12 @@ export const useFlashcardStore = defineStore('flashcard', () => {
     currentWordIndex,
     userProgress,
     isLoading,
+    wrongWords,
     loadCategories,
     selectCategory,
     nextWord,
     previousWord,
+    retryWrongWords,
     getCurrentWord,
     recordAnswer,
     loadUserProgress,
