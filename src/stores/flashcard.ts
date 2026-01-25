@@ -125,8 +125,10 @@ export const useFlashcardStore = defineStore('flashcard', () => {
       } as Word))
       
       for (let i = words.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [words[i], words[j]] = [words[j], words[i]]
+        const j = Math.floor(Math.random() * (i + 1))
+        const temp = words[i]
+        words[i] = words[j]
+        words[j] = temp
       }
       
       currentWords.value = words
@@ -165,8 +167,10 @@ export const useFlashcardStore = defineStore('flashcard', () => {
     // 間違えた問題をシャッフル
     const shuffled = [...wrongWords.value]
     for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+      const j = Math.floor(Math.random() * (i + 1))
+      const temp = shuffled[i]
+      shuffled[i] = shuffled[j]
+      shuffled[j] = temp
     }
     
     currentWords.value = shuffled
@@ -353,8 +357,10 @@ export const useFlashcardStore = defineStore('flashcard', () => {
 
       // Fisher-Yatesシャッフル
       for (let i = words.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [words[i], words[j]] = [words[j], words[i]]
+        const j = Math.floor(Math.random() * (i + 1))
+        const temp = words[i]
+        words[i] = words[j]
+        words[j] = temp
       }
       
       currentWords.value = words

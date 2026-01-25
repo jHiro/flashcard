@@ -1,7 +1,7 @@
 <template>
   <div class="quiz-screen">
-    <v-container class="pa-0">
-      <v-row class="mb-1 align-center">
+    <v-container class="pa-0" fluid>
+      <v-row class="mb-1 align-center ma-0">
         <v-col cols="auto">
           <v-btn 
             color="secondary" 
@@ -27,7 +27,7 @@
         class="mb-1"
       ></v-progress-linear>
 
-      <v-row v-if="currentWord">
+      <v-row v-if="currentWord" class="ma-0">
         <v-col cols="12" class="pa-0">
           <v-card class="flashcard" :class="{ flipped: showAnswer }">
             <v-card-text>
@@ -122,7 +122,7 @@
         </v-col>
       </v-row>
 
-      <v-row v-else class="justify-center">
+      <v-row v-else class="justify-center ma-0">
         <v-col cols="12" md="12" lg="10" class="pa-0">
           <v-card class="result-card" elevation="4">
             <v-card-title class="result-header">
@@ -223,12 +223,6 @@ const currentCategory = computed(() => flashcardStore.currentCategory)
 const currentWords = computed(() => flashcardStore.currentWords)
 const currentWordIndex = computed(() => flashcardStore.currentWordIndex)
 const currentWord = computed(() => flashcardStore.getCurrentWord())
-
-// 現在のカテゴリの進捗データを取得
-const currentProgress = computed(() => {
-  if (!currentCategory.value) return null
-  return flashcardStore.userProgress[currentCategory.value.id]
-})
 
 // 現在のセッションの正解数
 const sessionCorrectCount = computed(() => {
