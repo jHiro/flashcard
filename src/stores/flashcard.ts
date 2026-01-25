@@ -40,7 +40,8 @@ export interface Progress {
   totalWords: number
   correctCount: number
   wrongCount: number
-  completionRate: number
+  completionRate: number // 回答した問題の割合（0-100）
+  correctRate: number // 正解率（0-100）
   lastReviewedAt: any
   answers: Record<string, AnswerRecord>
 }
@@ -96,6 +97,9 @@ export const useFlashcardStore = defineStore('flashcard', () => {
   const selectCategory = async (categoryId: string) => {
     isLoading.value = true
     try {
+      // wrongWordsをリセット（新しいセッションの開始）
+      wrongWords.value = []
+      
       // カテゴリを検索
       const categoryDoc = await getDoc(doc(db, 'categories', categoryId))
       if (!categoryDoc.exists()) {
@@ -128,6 +132,8 @@ export const useFlashcardStore = defineStore('flashcard', () => {
       currentWords.value = words
 
       currentWordIndex.value = 0
+      
+      console.log('✅ カテゴリ選択完了。wrongWords リセット:', wrongWords.value.length)
     } catch (error) {
       console.error('カテゴリ選択エラー:', error)
       throw error
@@ -200,6 +206,7 @@ export const useFlashcardStore = defineStore('flashcard', () => {
           correctCount: 0,
           wrongCount: 0,
           completionRate: 0,
+          correctRate: 0,
           lastReviewedAt: null,
           answers: {},
         }
@@ -221,6 +228,7 @@ export const useFlashcardStore = defineStore('flashcard', () => {
         const wrongWord = currentWords.value.find(w => w.id === wordId)
         if (wrongWord && !wrongWords.value.some(w => w.id === wordId)) {
           wrongWords.value.push(wrongWord)
+          console.log('❌ 間違えた問題を追加:', wordId, '合計:', wrongWords.value.length)
         }
       }
 
@@ -232,9 +240,21 @@ export const useFlashcardStore = defineStore('flashcard', () => {
       currentProgress.wrongCount = answeredWords.filter(
         (a) => !a.isCorrect
       ).length
+      
+      // 完了率（回答した問題の割合）
       currentProgress.completionRate = Math.round(
         (answeredWords.length / currentProgress.totalWords) * 100
       )
+      
+      // 正解率（回答した問題のうち正解した割合）
+      if (answeredWords.length > 0) {
+        currentProgress.correctRate = Math.round(
+          (currentProgress.correctCount / answeredWords.length) * 100
+        )
+      } else {
+        currentProgress.correctRate = 0
+      }
+      
       currentProgress.lastReviewedAt = serverTimestamp()
 
       // Firestoreに保存（存在しない場合は作成、存在する場合は更新）
@@ -265,6 +285,110 @@ export const useFlashcardStore = defineStore('flashcard', () => {
     }
   }
 
+  // 間違った問題をFirestoreに保存
+  const saveWrongWords = async (userId: string, categoryId: string) => {
+    try {
+      if (wrongWords.value.length === 0) {
+        console.log('保存する間違った問題がありません')
+        return
+      }
+
+      const wrongWordsRef = doc(db, `wrongWords/${userId}/categories/${categoryId}`)
+      const wrongWordIds = wrongWords.value.map(w => w.id)
+      
+      await setDoc(wrongWordsRef, {
+        categoryId,
+        wordIds: wrongWordIds,
+        savedAt: serverTimestamp(),
+      })
+
+      console.log('✅ 間違った問題を保存しました:', wrongWordIds.length + '問')
+    } catch (error) {
+      console.error('間違った問題の保存エラー:', error)
+      throw error
+    }
+  }
+
+  // 保存された間違った問題を読み込んで復習モードで開始
+  const loadWrongWordsForReview = async (userId: string, categoryId: string) => {
+    isLoading.value = true
+    try {
+      // 保存された間違った問題IDリストを取得
+      const wrongWordsRef = doc(db, `wrongWords/${userId}/categories/${categoryId}`)
+      const wrongWordsDoc = await getDoc(wrongWordsRef)
+      
+      if (!wrongWordsDoc.exists()) {
+        throw new Error('保存された間違った問題がありません')
+      }
+
+      const data = wrongWordsDoc.data()
+      const wordIds = data.wordIds || []
+
+      if (wordIds.length === 0) {
+        throw new Error('保存された間違った問題がありません')
+      }
+
+      // カテゴリを取得
+      const categoryDoc = await getDoc(doc(db, 'categories', categoryId))
+      if (!categoryDoc.exists()) {
+        throw new Error('カテゴリが見つかりません')
+      }
+
+      currentCategory.value = {
+        id: categoryDoc.id,
+        ...categoryDoc.data(),
+      } as Category
+
+      // 問題IDから問題を取得
+      const words: Word[] = []
+      for (const wordId of wordIds) {
+        const wordDoc = await getDoc(doc(db, 'words', wordId))
+        if (wordDoc.exists()) {
+          words.push({
+            id: wordDoc.id,
+            ...wordDoc.data(),
+          } as Word)
+        }
+      }
+
+      // Fisher-Yatesシャッフル
+      for (let i = words.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [words[i], words[j]] = [words[j], words[i]]
+      }
+      
+      currentWords.value = words
+      currentWordIndex.value = 0
+      wrongWords.value = [] // リセット
+
+      console.log('✅ 間違った問題を読み込みました:', words.length + '問')
+    } catch (error) {
+      console.error('間違った問題の読み込みエラー:', error)
+      throw error
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  // 保存された間違った問題があるかチェック
+  const hasWrongWords = async (userId: string, categoryId: string): Promise<boolean> => {
+    try {
+      const wrongWordsRef = doc(db, `wrongWords/${userId}/categories/${categoryId}`)
+      const wrongWordsDoc = await getDoc(wrongWordsRef)
+      
+      if (!wrongWordsDoc.exists()) {
+        return false
+      }
+
+      const data = wrongWordsDoc.data()
+      const wordIds = data.wordIds || []
+      return wordIds.length > 0
+    } catch (error) {
+      console.error('間違った問題チェックエラー:', error)
+      return false
+    }
+  }
+
   return {
     categories,
     currentCategory,
@@ -281,5 +405,8 @@ export const useFlashcardStore = defineStore('flashcard', () => {
     getCurrentWord,
     recordAnswer,
     loadUserProgress,
+    saveWrongWords,
+    loadWrongWordsForReview,
+    hasWrongWords,
   }
 })

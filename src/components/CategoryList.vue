@@ -38,7 +38,7 @@
                   </div>
                   <div v-if="userProgress[category.id]" class="info-item">
                     <span class="info-label">正解率:</span>
-                    <span class="info-value success-rate">{{ userProgress[category.id]?.completionRate ?? 0 }}%</span>
+                    <span class="info-value success-rate">{{ userProgress[category.id]?.correctRate ?? 0 }}%</span>
                   </div>
                 </div>
               </v-card-text>
@@ -51,6 +51,16 @@
                 >
                   学習する
                 </v-btn>
+                <v-btn 
+                  v-if="hasWrongWordsMap[category.id]"
+                  color="error" 
+                  size="large" 
+                  variant="tonal"
+                  @click.stop="startReview(category.id)"
+                  class="ml-2"
+                >
+                  復習
+                </v-btn>
               </v-card-actions>
             </div>
           </v-card>
@@ -61,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFlashcardStore } from '@/stores/flashcard'
 import { useAuthStore } from '@/stores/auth'
@@ -71,10 +81,26 @@ const authStore = useAuthStore()
 const router = useRouter()
 
 const userProgress = computed(() => flashcardStore.userProgress)
+const hasWrongWordsMap = ref<Record<string, boolean>>({})
 
 const selectCategory = async (categoryId: string) => {
   await flashcardStore.selectCategory(categoryId)
   router.push({ name: 'quiz', params: { categoryId } })
+}
+
+const startReview = async (categoryId: string) => {
+  if (!authStore.currentUser) {
+    console.error('ユーザーが認証されていません')
+    return
+  }
+
+  try {
+    await flashcardStore.loadWrongWordsForReview(authStore.currentUser.uid, categoryId)
+    router.push({ name: 'quiz', params: { categoryId } })
+  } catch (error) {
+    console.error('復習開始エラー:', error)
+    alert('保存された間違った問題がありません。\n先に学習を完了してから「間違った問題を保存」してください。')
+  }
 }
 
 onMounted(async () => {
@@ -98,6 +124,14 @@ onMounted(async () => {
     await flashcardStore.loadCategories()
     if (authStore.currentUser) {
       await flashcardStore.loadUserProgress(authStore.currentUser.uid)
+      
+      // 各カテゴリに保存された間違った問題があるかチェック
+      for (const category of flashcardStore.categories) {
+        hasWrongWordsMap.value[category.id] = await flashcardStore.hasWrongWords(
+          authStore.currentUser.uid,
+          category.id
+        )
+      }
     }
   } catch (error) {
     console.error('データ読み込みエラー:', error)

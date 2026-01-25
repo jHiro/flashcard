@@ -34,7 +34,6 @@
               <div class="card-content">
                 <!-- 問題文を常に表示 -->
                 <div class="question-section">
-                  <p class="question-label">問題</p>
                   <h2 class="question-term">{{ currentWord.question }}</h2>
                   
                   <!-- ヒントボタン -->
@@ -124,7 +123,7 @@
       </v-row>
 
       <v-row v-else class="justify-center">
-        <v-col cols="12" md="10" lg="8" class="pa-0">
+        <v-col cols="12" md="12" lg="10" class="pa-0">
           <v-card class="result-card" elevation="4">
             <v-card-title class="result-header">
               <h2>🎉 学習完了！</h2>
@@ -135,7 +134,7 @@
                   <div class="stat-item">
                     <div class="stat-label">正解数</div>
                     <div class="stat-value">
-                      <span class="correct-count">{{ currentProgress?.correctCount || 0 }}</span>
+                      <span class="correct-count">{{ sessionCorrectCount }}</span>
                       <span class="total-count"> / {{ currentWords.length }}</span>
                     </div>
                   </div>
@@ -162,9 +161,9 @@
                 </div>
               </div>
             </v-card-text>
-            <v-card-actions class="pa-4">
+            <v-card-actions class="pa-4 d-flex flex-column">
               <v-btn 
-                v-if="flashcardStore.wrongWords.length > 0"
+                v-show="flashcardStore.wrongWords.length > 0"
                 color="warning" 
                 size="large" 
                 block
@@ -173,6 +172,18 @@
                 class="mb-2"
               >
                 間違えた問題をやり直す ({{ flashcardStore.wrongWords.length }}問)
+              </v-btn>
+              <v-btn 
+                v-show="flashcardStore.wrongWords.length > 0"
+                color="error" 
+                size="large" 
+                block
+                @click="saveWrongWords"
+                prepend-icon="mdi-content-save"
+                class="mb-2"
+                :loading="isSaving"
+              >
+                間違った問題を保存 ({{ flashcardStore.wrongWords.length }}問)
               </v-btn>
               <v-btn 
                 color="primary" 
@@ -203,6 +214,10 @@ const router = useRouter()
 
 const showAnswer = ref(false)
 const showHint = ref(false)
+const isSaving = ref(false)
+
+// 現在のセッションの結果を追跡
+const sessionAnswers = ref<Record<string, boolean>>({})
 
 const currentCategory = computed(() => flashcardStore.currentCategory)
 const currentWords = computed(() => flashcardStore.currentWords)
@@ -215,10 +230,22 @@ const currentProgress = computed(() => {
   return flashcardStore.userProgress[currentCategory.value.id]
 })
 
-// 得点計算（100点満点）
+// 現在のセッションの正解数
+const sessionCorrectCount = computed(() => {
+  return Object.values(sessionAnswers.value).filter(isCorrect => isCorrect).length
+})
+
+// 現在のセッションの回答数
+const sessionAnswerCount = computed(() => {
+  return Object.keys(sessionAnswers.value).length
+})
+
+// 得点計算（100点満点）- 現在のセッションの結果を使用
 const score = computed(() => {
-  if (!currentProgress.value || !currentWords.value.length) return 0
-  return Math.round((currentProgress.value.correctCount / currentWords.value.length) * 100)
+  if (!currentWords.value.length) return 0
+  // 全問回答した場合のみ計算
+  if (sessionAnswerCount.value !== currentWords.value.length) return 0
+  return Math.round((sessionCorrectCount.value / currentWords.value.length) * 100)
 })
 
 // 得点に応じた色
@@ -264,6 +291,9 @@ const handleAnswer = async (isCorrect: boolean) => {
       isCorrect
     })
 
+    // セッションの回答を記録
+    sessionAnswers.value[currentWord.value.id] = isCorrect
+
     await flashcardStore.recordAnswer(
       authStore.currentUser.uid,
       currentCategory.value.id,
@@ -295,9 +325,37 @@ const goBack = () => {
 }
 
 const retryWrong = () => {
+  // セッションをリセット
+  sessionAnswers.value = {}
   flashcardStore.retryWrongWords()
   showAnswer.value = false
   showHint.value = false
+}
+
+const saveWrongWords = async () => {
+  if (!authStore.currentUser || !currentCategory.value) {
+    console.error('❌ 必要なデータが不足しています')
+    return
+  }
+
+  if (flashcardStore.wrongWords.length === 0) {
+    alert('保存する間違った問題がありません')
+    return
+  }
+
+  isSaving.value = true
+  try {
+    await flashcardStore.saveWrongWords(
+      authStore.currentUser.uid,
+      currentCategory.value.id
+    )
+    alert(`間違った問題を保存しました！（${flashcardStore.wrongWords.length}問）\n\nセット一覧から「復習」ボタンで再挑戦できます。`)
+  } catch (error) {
+    console.error('❌ 保存エラー:', error)
+    alert('保存に失敗しました。もう一度お試しください。')
+  } finally {
+    isSaving.value = false
+  }
 }
 
 onMounted(() => {

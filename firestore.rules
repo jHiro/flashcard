@@ -45,6 +45,16 @@ service cloud.firestore {
       }
     }
     
+    // 間違った問題リストは自分のものだけ読取・書込可能
+    match /wrongWords/{userId} {
+      allow read, write: if isOwner(userId);
+      
+      // サブコレクション（カテゴリごとの間違った問題）
+      match /categories/{categoryId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+    
     // ユーザー情報は自分のものだけ読取・書込可能
     match /users/{userId} {
       allow read, write: if isOwner(userId);
