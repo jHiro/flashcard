@@ -1,6 +1,6 @@
 <template>
   <div class="quiz-screen">
-    <v-container>
+    <v-container class="pa-2">
       <v-row class="mb-6 align-center">
         <v-col cols="auto">
           <v-btn 
@@ -14,7 +14,7 @@
         <v-col>
           <div class="header-text">
             <h1>{{ currentCategory?.name }}</h1>
-            <p class="subtitle">カード {{ currentWordIndex + 1 }} / {{ currentWords.length }}</p>
+            <p v-if="currentWord" class="subtitle">カード {{ currentWordIndex + 1 }} / {{ currentWords.length }}</p>
           </div>
         </v-col>
         <v-col cols="auto">
@@ -28,7 +28,7 @@
       ></v-progress-linear>
 
       <v-row v-if="currentWord">
-        <v-col cols="12">
+        <v-col cols="12" class="pa-2">
           <v-card class="flashcard" :class="{ flipped: showAnswer }">
             <v-card-text>
               <div class="card-content">
@@ -124,12 +124,55 @@
       </v-row>
 
       <v-row v-else class="justify-center">
-        <v-col cols="12" class="text-center">
-          <v-card class="pa-6">
-            <h2>🎉 すべてのカードが完了しました！</h2>
-            <v-btn color="primary" class="mt-4" size="large" @click="goBack">
-              セット一覧に戻る
-            </v-btn>
+        <v-col cols="12" md="10" lg="8" class="pa-2">
+          <v-card class="result-card" elevation="4">
+            <v-card-title class="result-header">
+              <h2>🎉 学習完了！</h2>
+            </v-card-title>
+            <v-card-text class="pa-4">
+              <div class="result-content">
+                <div class="result-stats">
+                  <div class="stat-item">
+                    <div class="stat-label">正解数</div>
+                    <div class="stat-value">
+                      <span class="correct-count">{{ currentProgress?.correctCount || 0 }}</span>
+                      <span class="total-count"> / {{ currentWords.length }}</span>
+                    </div>
+                  </div>
+                  
+                  <v-divider class="my-2"></v-divider>
+                  
+                  <div class="stat-item">
+                    <div class="stat-label">得点</div>
+                    <div class="stat-score">{{ score }}</div>
+                  </div>
+                  
+                  <v-progress-linear
+                    :model-value="score"
+                    :color="scoreColor"
+                    height="16"
+                    class="mt-2"
+                  >
+                    <strong>{{ score }}点</strong>
+                  </v-progress-linear>
+                  
+                  <div class="result-message mt-3">
+                    <p class="message-text">{{ resultMessage }}</p>
+                  </div>
+                </div>
+              </div>
+            </v-card-text>
+            <v-card-actions class="pa-4">
+              <v-btn 
+                color="primary" 
+                size="large" 
+                block
+                @click="goBack"
+                prepend-icon="mdi-view-list"
+              >
+                セット一覧に戻る
+              </v-btn>
+            </v-card-actions>
           </v-card>
         </v-col>
       </v-row>
@@ -154,6 +197,37 @@ const currentCategory = computed(() => flashcardStore.currentCategory)
 const currentWords = computed(() => flashcardStore.currentWords)
 const currentWordIndex = computed(() => flashcardStore.currentWordIndex)
 const currentWord = computed(() => flashcardStore.getCurrentWord())
+
+// 現在のカテゴリの進捗データを取得
+const currentProgress = computed(() => {
+  if (!currentCategory.value) return null
+  return flashcardStore.userProgress[currentCategory.value.id]
+})
+
+// 得点計算（100点満点）
+const score = computed(() => {
+  if (!currentProgress.value || !currentWords.value.length) return 0
+  return Math.round((currentProgress.value.correctCount / currentWords.value.length) * 100)
+})
+
+// 得点に応じた色
+const scoreColor = computed(() => {
+  const s = score.value
+  if (s >= 80) return 'success'
+  if (s >= 60) return 'primary'
+  if (s >= 40) return 'warning'
+  return 'error'
+})
+
+// 結果メッセージ
+const resultMessage = computed(() => {
+  const s = score.value
+  if (s === 100) return '完璧です！すべて正解しました！🎊'
+  if (s >= 80) return '素晴らしい！よくできました！👏'
+  if (s >= 60) return '良い結果です！もう少しで完璧です！💪'
+  if (s >= 40) return '惜しい！もう一度復習してみましょう！📚'
+  return 'もう一度チャレンジしてみましょう！📝'
+})
 
 // カードが変わったら答えとヒントを非表示にする
 watch(currentWordIndex, () => {
@@ -193,6 +267,12 @@ const handleAnswer = async (isCorrect: boolean) => {
     flashcardStore.nextWord()
     
     console.log('📍 現在のカードインデックス:', flashcardStore.currentWordIndex)
+    
+    // 最後の問題の場合は進捗データを再読み込み
+    if (!flashcardStore.getCurrentWord()) {
+      console.log('📊 最後の問題完了。進捗データを再読み込みします')
+      await flashcardStore.loadUserProgress(authStore.currentUser.uid)
+    }
   } catch (error) {
     console.error('❌ 回答記録エラー:', error)
     alert('回答の記録に失敗しました。もう一度お試しください。')
@@ -212,7 +292,8 @@ onMounted(() => {
 
 <style scoped>
 .quiz-screen {
-  padding: 20px 0;
+  padding: 0;
+  padding-bottom: 88px;
 }
 
 .header-text {
@@ -220,14 +301,14 @@ onMounted(() => {
 }
 
 h1 {
-  font-size: 2rem;
+  font-size: 1.4rem;
   margin: 0;
 }
 
 .subtitle {
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   color: #666;
-  margin: 4px 0 0 0;
+  margin: 2px 0 0 0;
 }
 
 .flashcard {
@@ -242,11 +323,11 @@ h1 {
 }
 
 .card-content {
-  padding: 20px;
+  padding: 16px;
 }
 
 .answer-area {
-  min-height: 320px;
+  min-height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -254,19 +335,19 @@ h1 {
 
 .question-section {
   text-align: center;
-  padding: 30px 20px 20px 20px;
+  padding: 20px 16px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 8px;
   color: white;
-  min-height: 280px;
+  min-height: 200px;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
 .hint-button-area {
-  margin-top: 20px;
-  min-height: 80px;
+  margin-top: 12px;
+  min-height: 60px;
 }
 
 .hint-display {
@@ -285,16 +366,16 @@ h1 {
 }
 
 .question-label {
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   font-weight: bold;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 12px;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
   opacity: 0.9;
 }
 
 .question-term {
-  font-size: 2.5rem;
+  font-size: 1.8rem;
   font-weight: bold;
   margin: 0;
   line-height: 1.3;
@@ -353,8 +434,14 @@ h1 {
 }
 
 .card-actions-fixed {
-  padding: 20px;
-  min-height: 100px;
+  padding: 16px;
+  background: white;
+  position: fixed;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -362,6 +449,7 @@ h1 {
 
 .button-container {
   width: 100%;
+  height: 56px;
   display: flex;
   gap: 16px;
   justify-content: center;
@@ -371,15 +459,15 @@ h1 {
 .answer-button {
   width: 100%;
   max-width: 500px;
-  height: 64px !important;
-  font-size: 1.2rem;
+  height: 56px !important;
+  font-size: 1.1rem;
   font-weight: bold;
 }
 
 .result-button {
   flex: 1;
   max-width: 250px;
-  height: 64px !important;
+  height: 56px !important;
   font-size: 1.1rem;
   font-weight: bold;
 }
@@ -398,4 +486,80 @@ li {
 .text-muted {
   color: #999;
 }
+
+/* 結果画面のスタイル */
+.result-card {
+  border-radius: 16px !important;
+}
+
+.result-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+.result-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.result-content {
+  padding: 8px;
+}
+
+.result-stats {
+  text-align: center;
+}
+
+.stat-item {
+  margin: 12px 0;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.correct-count {
+  color: #4caf50;
+}
+
+.total-count {
+  color: #999;
+  font-size: 1.6rem;
+}
+
+.stat-score {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #667eea;
+  margin: 8px 0;
+}
+
+.stat-score::after {
+  content: '点';
+  font-size: 1.5rem;
+  margin-left: 6px;
+}
+
+.result-message {
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-radius: 8px;
+}
+
+.message-text {
+  font-size: 1.05rem;
+  font-weight: bold;
+  color: #667eea;
+  margin: 0;
+}
 </style>
+

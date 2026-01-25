@@ -180,24 +180,24 @@ onMounted(() => {
 .login-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 40px 30px;
+  padding: 32px 24px;
   text-align: center;
 }
 
 .app-title {
-  font-size: 2.5rem;
+  font-size: 1.85rem;
   font-weight: bold;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
 }
 
 .app-subtitle {
-  font-size: 1.05rem;
+  font-size: 0.9rem;
   margin: 0;
   opacity: 0.95;
 }
 
 .login-body {
-  padding: 40px 30px;
+  padding: 28px 24px;
 }
 
 .auth-button {
@@ -213,7 +213,7 @@ onMounted(() => {
 
 @media (max-width: 600px) {
   .login-wrapper {
-    padding: 15px;
+    padding: 12px;
   }
 
   .login-card {
@@ -221,33 +221,37 @@ onMounted(() => {
   }
 
   .login-header {
-    padding: 32px 24px;
+    padding: 24px 20px;
   }
 
   .app-title {
-    font-size: 2rem;
+    font-size: 1.65rem;
   }
 
   .app-subtitle {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
   }
 
   .login-body {
-    padding: 32px 24px;
+    padding: 24px 20px;
   }
 }
 
 @media (max-width: 400px) {
   .login-header {
-    padding: 28px 20px;
+    padding: 20px 16px;
   }
 
   .app-title {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
+  }
+
+  .app-subtitle {
+    font-size: 0.8rem;
   }
 
   .login-body {
-    padding: 28px 20px;
+    padding: 20px 16px;
   }
 }
 </style>

@@ -131,7 +131,7 @@ export const useFlashcardStore = defineStore('flashcard', () => {
 
   // 次の問題に進む
   const nextWord = () => {
-    if (currentWordIndex.value < currentWords.value.length - 1) {
+    if (currentWordIndex.value < currentWords.value.length) {
       currentWordIndex.value++
     }
   }
