@@ -33,6 +33,8 @@ export interface Category {
   createdBy: string
   createdAt: any
   wordCount: number
+  parentCategoryId?: string // 親カテゴリのID（子の場合のみ）
+  isParent?: boolean // 親カテゴリかどうか
 }
 
 export interface Progress {
@@ -54,6 +56,8 @@ export interface AnswerRecord {
 
 export const useFlashcardStore = defineStore('flashcard', () => {
   const categories = ref<Category[]>([])
+  const parentCategories = ref<Category[]>([])
+  const childCategories = ref<Category[]>([])
   const currentCategory = ref<Category | null>(null)
   const currentWords = ref<Word[]>([])
   const currentWordIndex = ref(0)
@@ -81,7 +85,13 @@ export const useFlashcardStore = defineStore('flashcard', () => {
         ...doc.data(),
       } as Category))
       
+      // 親カテゴリと子カテゴリに分ける
+      parentCategories.value = categories.value.filter(cat => cat.isParent === true)
+      childCategories.value = categories.value.filter(cat => cat.parentCategoryId != null)
+      
       console.log('✨ カテゴリ読み込み完了:', categories.value)
+      console.log('👪 親カテゴリ:', parentCategories.value.length)
+      console.log('👶 子カテゴリ:', childCategories.value.length)
     } catch (error: any) {
       console.error('❌ カテゴリの取得エラー:', error)
       console.error('📍 エラーコード:', error.code)
@@ -91,6 +101,11 @@ export const useFlashcardStore = defineStore('flashcard', () => {
     } finally {
       isLoading.value = false
     }
+  }
+  
+  // 親カテゴリの子カテゴリを取得
+  const getChildCategories = (parentId: string): Category[] => {
+    return childCategories.value.filter(cat => cat.parentCategoryId === parentId)
   }
 
   // カテゴリを選択して問題を読込
@@ -397,6 +412,8 @@ export const useFlashcardStore = defineStore('flashcard', () => {
 
   return {
     categories,
+    parentCategories,
+    childCategories,
     currentCategory,
     currentWords,
     currentWordIndex,
@@ -404,6 +421,7 @@ export const useFlashcardStore = defineStore('flashcard', () => {
     isLoading,
     wrongWords,
     loadCategories,
+    getChildCategories,
     selectCategory,
     nextWord,
     previousWord,
