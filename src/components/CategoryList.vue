@@ -246,7 +246,8 @@ onMounted(async () => {
 
 <style scoped>
 .category-list {
-  padding: 12px;
+  padding: 0;
+  margin: 0;
 }
 
 h1 {
