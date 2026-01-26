@@ -86,7 +86,9 @@ export const useFlashcardStore = defineStore('flashcard', () => {
       } as Category))
       
       // 親カテゴリと子カテゴリに分ける
-      parentCategories.value = categories.value.filter(cat => cat.isParent === true)
+      parentCategories.value = categories.value
+        .filter(cat => cat.isParent === true)
+        .sort((a, b) => (a.order || 999) - (b.order || 999))
       childCategories.value = categories.value.filter(cat => cat.parentCategoryId != null)
       
       console.log('✨ カテゴリ読み込み完了:', categories.value)

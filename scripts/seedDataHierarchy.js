@@ -31,6 +31,7 @@ const parentCategories = [
     level: '中学',
     description: '中学理科の物理・化学・生物・地学分野（全108問）',
     isParent: true,
+    order: 1,
   },
   {
     id: 'parent_social',
@@ -39,6 +40,7 @@ const parentCategories = [
     level: '中学',
     description: '中学社会の地理・歴史・公民分野',
     isParent: true,
+    order: 2,
   },
   {
     id: 'parent_mystery',
@@ -47,6 +49,7 @@ const parentCategories = [
     level: '一般',
     description: '超常現象、オカルト、未確認生物、古代文明などの不思議な現象',
     isParent: true,
+    order: 3,
   }
 ];
 
@@ -1867,6 +1870,7 @@ async function seedDatabaseWithHierarchy() {
         level: parent.level,
         description: parent.description,
         isParent: true,
+        order: parent.order || 999,
         wordCount: 0,
         createdBy: 'admin',
         createdAt: admin.firestore.Timestamp.now(),
