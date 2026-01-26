@@ -364,6 +364,7 @@ onMounted(() => {
   padding: 0;
   padding-bottom: 100px;
   min-height: 100vh;
+  margin: 0;
 }
 
 .header-text {
@@ -392,7 +393,7 @@ h1 {
 }
 
 .card-content {
-  padding: 16px;
+  padding: 0;
 }
 
 .answer-area {
@@ -400,13 +401,14 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 16px 12px;
 }
 
 .question-section {
   text-align: center;
-  padding: 20px 16px;
+  padding: 20px 12px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 8px;
+  border-radius: 0;
   color: white;
   min-height: 180px;
   display: flex;
