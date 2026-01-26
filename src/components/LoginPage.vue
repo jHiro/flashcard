@@ -167,7 +167,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
+  padding: 0;
 }
 
 .login-card {
@@ -213,11 +213,13 @@ onMounted(() => {
 
 @media (max-width: 600px) {
   .login-wrapper {
-    padding: 12px;
+    padding: 0;
   }
 
   .login-card {
     max-width: 100%;
+    border-radius: 0 !important;
+    min-height: 100vh;
   }
 
   .login-header {
