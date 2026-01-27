@@ -38,14 +38,6 @@ const navigateTo = (name: string) => {
         セット一覧
       </v-btn>
 
-      <v-btn
-        variant="text"
-        @click="navigateTo('progress')"
-        prepend-icon="mdi-chart-line"
-      >
-        進度確認
-      </v-btn>
-
       <v-menu>
         <template v-slot:activator="{ props }">
           <v-btn variant="text" v-bind="props" prepend-icon="mdi-account-circle">

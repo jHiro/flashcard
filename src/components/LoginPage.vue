@@ -78,6 +78,21 @@
                   {{ isSignup ? 'サインアップ' : 'ログイン' }}
                 </v-btn>
 
+                <!-- ゲストログインボタン -->
+                <v-btn
+                  v-if="!isSignup"
+                  block
+                  color="success"
+                  variant="outlined"
+                  size="large"
+                  @click="handleGuestLogin"
+                  :loading="isLoading"
+                  :disabled="isLoading"
+                  class="mb-4"
+                >
+                  ゲストでログイン
+                </v-btn>
+
                 <!-- トグル -->
                 <div class="text-center">
                   <v-btn
@@ -140,6 +155,20 @@ const handleAuth = async () => {
     router.push({ name: 'home' })
   } catch (error) {
     console.error('認証エラー:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleGuestLogin = async () => {
+  isLoading.value = true
+  try {
+    // ゲストアカウントでログイン
+    await authStore.loginWithEmail('guest@example.com', 'guest@example.com')
+    // ログイン成功後、ホーム画面へ
+    router.push({ name: 'home' })
+  } catch (error) {
+    console.error('ゲストログインエラー:', error)
   } finally {
     isLoading.value = false
   }
