@@ -35,6 +35,7 @@ export interface Category {
   wordCount: number
   parentCategoryId?: string // 親カテゴリのID（子の場合のみ）
   isParent?: boolean // 親カテゴリかどうか
+  order?: number // 表示順序
 }
 
 export interface Progress {
