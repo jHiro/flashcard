@@ -18,7 +18,15 @@
           </div>
         </v-col>
         <v-col cols="auto">
-          <div style="width: 40px;"></div>
+          <v-btn
+            v-if="currentWordIndex > 0"
+            color="warning"
+            variant="tonal"
+            @click="goToPreviousWord"
+            icon="mdi-undo"
+          >
+          </v-btn>
+          <div v-else style="width: 40px;"></div>
         </v-col>
       </v-row>
 
@@ -316,6 +324,32 @@ const handleAnswer = async (isCorrect: boolean) => {
 
 const goBack = () => {
   router.back()
+}
+
+const goToPreviousWord = () => {
+  if (currentWordIndex.value > 0) {
+    // 前の問題の回答を取り消す
+    const previousWord = currentWords.value[currentWordIndex.value - 1]
+    if (previousWord && sessionAnswers.value[previousWord.id] !== undefined) {
+      delete sessionAnswers.value[previousWord.id]
+      
+      // Firestoreからも回答を削除
+      if (authStore.currentUser && currentCategory.value) {
+        flashcardStore.undoAnswer(
+          authStore.currentUser.uid,
+          currentCategory.value.id,
+          previousWord.id
+        ).catch(error => {
+          console.error('❌ 回答の取り消しエラー:', error)
+        })
+      }
+    }
+    
+    // 前の問題に戻る
+    flashcardStore.previousWord()
+    showAnswer.value = false
+    showHint.value = false
+  }
 }
 
 const retryWrong = () => {

@@ -292,6 +292,70 @@ export const useFlashcardStore = defineStore('flashcard', () => {
     }
   }
 
+  // 回答を取り消す（戻るボタン用）
+  const undoAnswer = async (
+    userId: string,
+    categoryId: string,
+    wordId: string
+  ) => {
+    try {
+      const progressRef = doc(db, `progress/${userId}/categories/${categoryId}`)
+      
+      // 既存の進捗を取得
+      let currentProgress = userProgress.value[categoryId]
+      if (!currentProgress || !currentProgress.answers[wordId]) {
+        console.log('取り消す回答が見つかりません')
+        return
+      }
+
+      // 間違えた問題リストから削除
+      const wasIncorrect = !currentProgress.answers[wordId].isCorrect
+      if (wasIncorrect) {
+        wrongWords.value = wrongWords.value.filter(w => w.id !== wordId)
+        console.log('❌ 間違えた問題リストから削除:', wordId)
+      }
+
+      // 回答を削除
+      delete currentProgress.answers[wordId]
+
+      // 正解数・不正解数を更新
+      const answeredWords = Object.values(currentProgress.answers)
+      currentProgress.correctCount = answeredWords.filter(
+        (a) => a.isCorrect
+      ).length
+      currentProgress.wrongCount = answeredWords.filter(
+        (a) => !a.isCorrect
+      ).length
+      
+      // 完了率（回答した問題の割合）
+      currentProgress.completionRate = Math.round(
+        (answeredWords.length / currentProgress.totalWords) * 100
+      )
+      
+      // 正解率（回答した問題のうち正解した割合）
+      if (answeredWords.length > 0) {
+        currentProgress.correctRate = Math.round(
+          (currentProgress.correctCount / answeredWords.length) * 100
+        )
+      } else {
+        currentProgress.correctRate = 0
+      }
+      
+      currentProgress.lastReviewedAt = serverTimestamp()
+
+      // Firestoreに保存
+      await setDoc(progressRef, currentProgress, { merge: true })
+
+      // ローカルストアを更新
+      userProgress.value[categoryId] = currentProgress
+      
+      console.log('✅ 回答を取り消しました:', wordId)
+    } catch (error) {
+      console.error('回答取り消しエラー:', error)
+      throw error
+    }
+  }
+
   // ユーザーの進捗を読込
   const loadUserProgress = async (userId: string) => {
     try {
@@ -431,6 +495,7 @@ export const useFlashcardStore = defineStore('flashcard', () => {
     retryWrongWords,
     getCurrentWord,
     recordAnswer,
+    undoAnswer,
     loadUserProgress,
     saveWrongWords,
     loadWrongWordsForReview,
