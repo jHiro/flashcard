@@ -334,8 +334,8 @@ h1 {
 
 .info-item {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: baseline;
+  gap: 6px;
 }
 
 .info-label {
@@ -354,7 +354,7 @@ h1 {
   color: #4caf50;
 }
 
-@media (max-width: 520px) {
+@media (max-width: 370px) {
   .card-content {
     gap: 12px;
   }
