@@ -39,10 +39,31 @@
               >
                 <div class="card-content">
                   <div class="card-header">
-                    <v-card-title class="card-title">{{ category.name }}</v-card-title>
-                    <v-chip color="primary" variant="tonal" class="ml-2" size="small">
-                      {{ category.subject }}
-                    </v-chip>
+                    <div class="card-title-area">
+                      <v-card-title class="card-title">{{ category.name }}</v-card-title>
+                      <v-chip color="primary" variant="tonal" class="ml-2" size="small">
+                        {{ category.subject }}
+                      </v-chip>
+                    </div>
+                    <div class="card-action-inline">
+                      <v-btn 
+                        color="primary" 
+                        size="large" 
+                        variant="flat"
+                        @click.stop="selectCategory(category.id)"
+                      >
+                        学習する
+                      </v-btn>
+                      <v-btn 
+                        v-if="hasWrongWordsMap[category.id]"
+                        color="error" 
+                        size="large" 
+                        variant="tonal"
+                        @click.stop="startReview(category.id)"
+                      >
+                        復習
+                      </v-btn>
+                    </div>
                   </div>
                   <v-card-text class="card-info">
                     <div class="info-row">
@@ -61,24 +82,6 @@
                     </div>
                   </v-card-text>
                   <v-card-actions class="card-action">
-                    <v-btn 
-                      color="primary" 
-                      size="large" 
-                      variant="flat"
-                      @click.stop="selectCategory(category.id)"
-                    >
-                      学習する
-                    </v-btn>
-                    <v-btn 
-                      v-if="hasWrongWordsMap[category.id]"
-                      color="error" 
-                      size="large" 
-                      variant="tonal"
-                      @click.stop="startReview(category.id)"
-                      class="ml-2"
-                    >
-                      復習
-                    </v-btn>
                   </v-card-actions>
                 </div>
               </v-card>
@@ -110,10 +113,31 @@
               >
                 <div class="card-content">
                   <div class="card-header">
-                    <v-card-title class="card-title">{{ category.name }}</v-card-title>
-                    <v-chip color="primary" variant="tonal" class="ml-2">
-                      {{ category.subject }}
-                    </v-chip>
+                    <div class="card-title-area">
+                      <v-card-title class="card-title">{{ category.name }}</v-card-title>
+                      <v-chip color="primary" variant="tonal" class="ml-2">
+                        {{ category.subject }}
+                      </v-chip>
+                    </div>
+                    <div class="card-action-inline">
+                      <v-btn 
+                        color="primary" 
+                        size="large" 
+                        variant="flat"
+                        @click.stop="selectCategory(category.id)"
+                      >
+                        学習する
+                      </v-btn>
+                      <v-btn 
+                        v-if="hasWrongWordsMap[category.id]"
+                        color="error" 
+                        size="large" 
+                        variant="tonal"
+                        @click.stop="startReview(category.id)"
+                      >
+                        復習
+                      </v-btn>
+                    </div>
                   </div>
                   <v-card-text class="card-info">
                     <div class="info-row">
@@ -132,24 +156,6 @@
                     </div>
                   </v-card-text>
                   <v-card-actions class="card-action">
-                    <v-btn 
-                      color="primary" 
-                      size="large" 
-                      variant="flat"
-                      @click.stop="selectCategory(category.id)"
-                    >
-                      学習する
-                    </v-btn>
-                    <v-btn 
-                      v-if="hasWrongWordsMap[category.id]"
-                      color="error" 
-                      size="large" 
-                      variant="tonal"
-                      @click.stop="startReview(category.id)"
-                      class="ml-2"
-                    >
-                      復習
-                    </v-btn>
                   </v-card-actions>
                 </div>
               </v-card>
@@ -299,7 +305,23 @@ h1 {
   flex: 1;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   min-width: 200px;
+}
+
+.card-title-area {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+}
+
+.card-action-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .card-title {
@@ -364,12 +386,12 @@ h1 {
 
   .card-action {
     margin-left: 0;
-    display: flex;
-    gap: 8px;
   }
 
-  .card-action .v-btn {
-    flex: 1;
+  .card-action-inline {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 }
 
