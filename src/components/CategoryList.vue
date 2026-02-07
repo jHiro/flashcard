@@ -307,6 +307,7 @@ h1 {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  flex-wrap: wrap;
   min-width: 200px;
 }
 
@@ -315,6 +316,8 @@ h1 {
   align-items: center;
   min-width: 0;
   flex: 1;
+  flex-wrap: wrap;
+  row-gap: 6px;
 }
 
 .card-action-inline {
@@ -322,6 +325,7 @@ h1 {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 .card-title {
