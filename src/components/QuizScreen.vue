@@ -666,5 +666,72 @@ li {
   color: #667eea;
   margin: 0;
 }
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 1.2rem;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+  }
+
+  .question-term {
+    font-size: 1.5rem;
+  }
+
+  .hint-text-white {
+    font-size: 0.95rem;
+  }
+
+  .hint-message {
+    font-size: 1rem;
+    padding: 28px 16px;
+  }
+
+  .definition {
+    font-size: 1.05rem;
+    padding: 16px;
+  }
+
+  li {
+    font-size: 1rem;
+  }
+
+  .answer-button,
+  .result-button {
+    font-size: 1rem;
+    height: 52px !important;
+  }
+
+  .answer-area {
+    min-height: 120px;
+  }
+
+  .question-section {
+    min-height: 160px;
+    padding: 16px 12px;
+  }
+
+  .stat-value {
+    font-size: 1.6rem;
+  }
+
+  .total-count {
+    font-size: 1.3rem;
+  }
+
+  .stat-score {
+    font-size: 2.4rem;
+  }
+
+  .stat-score::after {
+    font-size: 1.2rem;
+  }
+
+  .message-text {
+    font-size: 0.95rem;
+  }
+}
 </style>
 

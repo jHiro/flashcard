@@ -372,4 +372,30 @@ h1 {
     flex: 1;
   }
 }
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  .parent-category-title {
+    font-size: 1.35rem;
+  }
+
+  .parent-category-description {
+    font-size: 0.9rem;
+  }
+
+  .card-title {
+    font-size: 1.25rem !important;
+  }
+
+  .info-label {
+    font-size: 0.8rem;
+  }
+
+  .info-value {
+    font-size: 1rem;
+  }
+}
 </style>
