@@ -40,10 +40,7 @@
                 <div class="card-content">
                   <div class="card-header">
                     <div class="card-title-area">
-                      <v-card-title class="card-title">{{ category.name }}</v-card-title>
-                      <v-chip color="primary" variant="tonal" class="ml-2" size="small">
-                        {{ category.subject }}
-                      </v-chip>
+                      <h3 class="card-title-text">{{ category.name }}</h3>
                     </div>
                     <div class="card-action-inline">
                       <v-btn 
@@ -81,8 +78,6 @@
                       </div>
                     </div>
                   </v-card-text>
-                  <v-card-actions class="card-action">
-                  </v-card-actions>
                 </div>
               </v-card>
             </v-col>
@@ -114,10 +109,7 @@
                 <div class="card-content">
                   <div class="card-header">
                     <div class="card-title-area">
-                      <v-card-title class="card-title">{{ category.name }}</v-card-title>
-                      <v-chip color="primary" variant="tonal" class="ml-2">
-                        {{ category.subject }}
-                      </v-chip>
+                      <h3 class="card-title-text">{{ category.name }}</h3>
                     </div>
                     <div class="card-action-inline">
                       <v-btn 
@@ -155,8 +147,6 @@
                       </div>
                     </div>
                   </v-card-text>
-                  <v-card-actions class="card-action">
-                  </v-card-actions>
                 </div>
               </v-card>
             </v-col>
@@ -296,27 +286,22 @@ h1 {
 
 .card-content {
   display: flex;
-  align-items: center;
-  padding: 20px;
-  gap: 20px;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 14px 18px 12px;
+  gap: 8px;
 }
 
 .card-header {
-  flex: 1;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  min-width: 200px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: 16px;
 }
 
 .card-title-area {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
   min-width: 0;
-  flex: 1;
-  gap: 6px;
 }
 
 .card-action-inline {
@@ -324,24 +309,26 @@ h1 {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
-  margin-left: auto;
+  justify-self: end;
+  white-space: nowrap;
 }
 
-.card-title {
-  font-size: 1.5rem !important;
+.card-title-text {
+  font-size: 1.5rem;
   font-weight: bold;
-  padding: 0;
   margin: 0;
+  line-height: 1.2;
+  text-align: left;
 }
 
 .card-info {
-  flex: 1;
-  padding: 0 16px;
+  width: 100%;
+  padding: 4px 0 0;
 }
 
 .info-row {
   display: flex;
-  gap: 24px;
+  gap: 12px 16px;
   flex-wrap: wrap;
 }
 
@@ -367,38 +354,25 @@ h1 {
   color: #4caf50;
 }
 
-.card-action {
-  padding: 0;
-  margin-left: auto;
-}
-
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .card-content {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
+    gap: 12px;
   }
 
   .card-header {
-    min-width: auto;
+    grid-template-columns: 1fr;
+    row-gap: 8px;
   }
 
   .info-row {
     justify-content: space-between;
   }
 
-  .card-action {
-    margin-left: 0;
-  }
-
   .card-action-inline {
     width: 100%;
     justify-content: flex-start;
     flex-wrap: wrap;
-  }
-
-  .card-header {
-    flex-direction: column;
+    white-space: normal;
   }
 }
 
@@ -415,8 +389,8 @@ h1 {
     font-size: 0.9rem;
   }
 
-  .card-title {
-    font-size: 1.25rem !important;
+  .card-title-text {
+    font-size: 1.25rem;
   }
 
   .info-label {
