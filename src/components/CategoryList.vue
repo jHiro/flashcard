@@ -275,7 +275,7 @@ h1 {
 .category-card {
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
-  margin-bottom: 16px;
+  margin-bottom: 0;
   border-radius: 12px !important;
 }
 
@@ -354,7 +354,7 @@ h1 {
   color: #4caf50;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 520px) {
   .card-content {
     gap: 12px;
   }
