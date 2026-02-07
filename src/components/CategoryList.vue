@@ -304,20 +304,19 @@ h1 {
 .card-header {
   flex: 1;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  flex-wrap: wrap;
   min-width: 200px;
 }
 
 .card-title-area {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   min-width: 0;
   flex: 1;
-  flex-wrap: wrap;
-  row-gap: 6px;
+  gap: 6px;
 }
 
 .card-action-inline {
@@ -396,6 +395,10 @@ h1 {
     width: 100%;
     justify-content: flex-start;
     flex-wrap: wrap;
+  }
+
+  .card-header {
+    flex-direction: column;
   }
 }
 
