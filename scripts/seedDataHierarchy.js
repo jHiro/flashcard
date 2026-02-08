@@ -3523,7 +3523,7 @@ const words = [
   {
     categoryId: 'junior_english_idioms',
     question: "I'm _____ _____ my key. / 私は鍵を探しています。",
-    answer: 'look for',
+    answer: 'looking for',
     hint: 'lookとforの組み合わせ',
     examples: ["I'm looking for my key.", 'look for a job'],
   },
@@ -3537,14 +3537,14 @@ const words = [
   {
     categoryId: 'junior_english_idioms',
     question: "I'm _____ _____ _____ seeing you. / あなたに会うのを楽しみにしています。",
-    answer: 'look forward to',
+    answer: 'looking forward to',
     hint: 'forwardを使う',
     examples: ["I'm looking forward to seeing you.", 'look forward to the party'],
   },
   {
     categoryId: 'junior_english_idioms',
     question: "We _____ _____ the station. / 私たちは駅に到着しました。",
-    answer: 'arrive at',
+    answer: 'arrived at',
     hint: 'arriveとatの組み合わせ',
     examples: ['We arrived at the station.', 'arrive at school'],
   },
@@ -3642,7 +3642,7 @@ const words = [
   {
     categoryId: 'junior_english_idioms',
     question: "I _____ _____ _____ school. / 私は学校から帰ってきました。",
-    answer: 'come back from',
+    answer: 'came back from',
     hint: 'come backとfromの組み合わせ',
     examples: ['I came back from school.', 'come back from Japan'],
   },
