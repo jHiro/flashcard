@@ -410,18 +410,15 @@ watch(
         if (!currentWord.value || currentWord.value.id !== wordId) return
         if (showAnswer.value) return
         showAnswer.value = true
+        playAnswerTts()
       }, AUTO_REVEAL_DELAY_MS)
     })
   },
   { immediate: true }
 )
 
-const revealAnswer = () => {
-  showAnswer.value = true
-}
-
-watch(showAnswer, (visible) => {
-  if (!visible || !ttsEnabled.value) return
+const playAnswerTts = () => {
+  if (!ttsEnabled.value) return
   const word = currentWord.value
   if (!word?.answer) return
   const wordId = word.id
@@ -436,7 +433,12 @@ watch(showAnswer, (visible) => {
       flashcardStore.nextWord()
     }, AUTO_NEXT_DELAY_MS)
   })
-})
+}
+
+const revealAnswer = () => {
+  showAnswer.value = true
+  playAnswerTts()
+}
 
 watch(ttsEnabled, (enabled) => {
   localStorage.setItem(TTS_STORAGE_KEY, String(enabled))
