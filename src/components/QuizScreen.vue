@@ -2,7 +2,7 @@
   <div class="quiz-screen">
     <v-container class="pa-0" fluid>
       <v-row class="mb-1 align-center ma-0">
-        <v-col cols="auto">
+        <v-col cols="auto" class="header-side header-left pa-0">
           <v-btn
             v-if="currentWordIndex > 0"
             color="warning"
@@ -13,7 +13,13 @@
           </v-btn>
           <div v-else style="width: 40px;"></div>
         </v-col>
-        <v-col cols="auto" class="d-flex align-center">
+        <v-col>
+          <div class="header-text">
+            <h1>{{ currentCategory?.name }}</h1>
+            <p v-if="currentWord" class="subtitle">カード {{ currentWordIndex + 1 }} / {{ currentWords.length }}</p>
+          </div>
+        </v-col>
+        <v-col cols="auto" class="header-side header-controls">
           <v-switch
             v-model="ttsEnabled"
             label="音声"
@@ -22,21 +28,6 @@
             hide-details
             inset
           ></v-switch>
-        </v-col>
-        <v-col>
-          <div class="header-text">
-            <h1>{{ currentCategory?.name }}</h1>
-            <p v-if="currentWord" class="subtitle">カード {{ currentWordIndex + 1 }} / {{ currentWords.length }}</p>
-          </div>
-        </v-col>
-        <v-col cols="auto">
-          <v-btn
-            color="secondary"
-            variant="tonal"
-            @click="goBack"
-          >
-            終了
-          </v-btn>
         </v-col>
       </v-row>
 
@@ -543,6 +534,21 @@ onBeforeUnmount(() => {
 
 .header-text {
   text-align: center;
+}
+
+.header-side {
+  min-width: 160px;
+  display: flex;
+  align-items: center;
+}
+
+.header-left {
+  justify-content: flex-start;
+}
+
+.header-controls {
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 h1 {
