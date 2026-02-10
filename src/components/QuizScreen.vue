@@ -28,6 +28,15 @@
             hide-details
             inset
           ></v-switch>
+          <v-switch
+            v-model="autoNextEnabled"
+            label="自動送り"
+            color="primary"
+            density="compact"
+            hide-details
+            inset
+            :disabled="!ttsEnabled"
+          ></v-switch>
         </v-col>
       </v-row>
 
@@ -228,8 +237,11 @@ const isSaving = ref(false)
 const TTS_ENDPOINT = import.meta.env.VITE_TTS_FUNCTION_URL || '/api/tts'
 const TTS_LANGUAGE_CODE = 'ja-JP'
 const TTS_VOICE_NAME = 'ja-JP-Neural2-B'
+const TTS_EN_LANGUAGE_CODE = 'en-US'
+const TTS_EN_VOICE_NAME = 'en-US-Neural2-F'
 const MAX_TTS_CHARS = 200
 const TTS_STORAGE_KEY = 'flashcard:tts-enabled'
+const AUTO_NEXT_STORAGE_KEY = 'flashcard:tts-auto-next'
 const AUTO_NEXT_DELAY_MS = 400
 const AUTO_REVEAL_DELAY_MS = 3000
 
@@ -241,6 +253,7 @@ let revealTimer: number | null = null
 let nextTimer: number | null = null
 
 const ttsEnabled = ref(true)
+const autoNextEnabled = ref(true)
 
 // 現在のセッションの結果を追跡
 const sessionAnswers = ref<Record<string, boolean>>({})
@@ -302,6 +315,20 @@ const base64ToUint8Array = (base64: string) => {
   return bytes
 }
 
+const hasJapaneseChars = (text: string) => /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(text)
+
+const hasLatinLetters = (text: string) => /[A-Za-z]/.test(text)
+
+const resolveTtsVoice = (text: string) => {
+  if (hasJapaneseChars(text)) {
+    return { languageCode: TTS_LANGUAGE_CODE, voiceName: TTS_VOICE_NAME }
+  }
+  if (hasLatinLetters(text)) {
+    return { languageCode: TTS_EN_LANGUAGE_CODE, voiceName: TTS_EN_VOICE_NAME }
+  }
+  return { languageCode: TTS_LANGUAGE_CODE, voiceName: TTS_VOICE_NAME }
+}
+
 const stopTts = () => {
   if (revealTimer) {
     window.clearTimeout(revealTimer)
@@ -338,6 +365,7 @@ const speakQuestion = async (text: string, onEnded?: () => void) => {
   if (!trimmed) return
 
   const safeText = trimmed.slice(0, MAX_TTS_CHARS)
+  const { languageCode, voiceName } = resolveTtsVoice(safeText)
 
   stopTts()
   ttsAbortController = new AbortController()
@@ -353,8 +381,8 @@ const speakQuestion = async (text: string, onEnded?: () => void) => {
       },
       body: JSON.stringify({
         text: safeText,
-        languageCode: TTS_LANGUAGE_CODE,
-        voiceName: TTS_VOICE_NAME,
+        languageCode,
+        voiceName,
       }),
       signal: ttsAbortController.signal,
     })
@@ -403,10 +431,10 @@ watch(
     }
     const wordId = word.id
     void speakQuestion(word.question, () => {
-      if (!ttsEnabled.value) return
+      if (!ttsEnabled.value || !autoNextEnabled.value) return
       revealTimer = window.setTimeout(() => {
         revealTimer = null
-        if (!ttsEnabled.value) return
+        if (!ttsEnabled.value || !autoNextEnabled.value) return
         if (!currentWord.value || currentWord.value.id !== wordId) return
         if (showAnswer.value) return
         showAnswer.value = true
@@ -423,10 +451,10 @@ const playAnswerTts = () => {
   if (!word?.answer) return
   const wordId = word.id
   void speakQuestion(word.answer, () => {
-    if (!ttsEnabled.value) return
+    if (!ttsEnabled.value || !autoNextEnabled.value) return
     nextTimer = window.setTimeout(() => {
       nextTimer = null
-      if (!ttsEnabled.value) return
+      if (!ttsEnabled.value || !autoNextEnabled.value) return
       if (!currentWord.value || currentWord.value.id !== wordId) return
       showAnswer.value = false
       showHint.value = false
@@ -446,6 +474,14 @@ watch(ttsEnabled, (enabled) => {
     void speakQuestion(currentWord.value.question)
   } else {
     stopTts()
+  }
+})
+
+watch(autoNextEnabled, (enabled) => {
+  localStorage.setItem(AUTO_NEXT_STORAGE_KEY, String(enabled))
+  if (!enabled && nextTimer) {
+    window.clearTimeout(nextTimer)
+    nextTimer = null
   }
 })
 
@@ -565,6 +601,10 @@ onMounted(() => {
   const stored = localStorage.getItem(TTS_STORAGE_KEY)
   if (stored === 'true' || stored === 'false') {
     ttsEnabled.value = stored === 'true'
+  }
+  const storedAutoNext = localStorage.getItem(AUTO_NEXT_STORAGE_KEY)
+  if (storedAutoNext === 'true' || storedAutoNext === 'false') {
+    autoNextEnabled.value = storedAutoNext === 'true'
   }
 
   if (!currentCategory.value) {
