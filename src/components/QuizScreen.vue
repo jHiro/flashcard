@@ -101,7 +101,7 @@
                   color="primary"
                   class="answer-button"
                   size="x-large"
-                  @click="showAnswer = true"
+                  @click="revealAnswer"
                 >
                   答えを表示
                 </v-btn>
@@ -230,10 +230,15 @@ const TTS_LANGUAGE_CODE = 'ja-JP'
 const TTS_VOICE_NAME = 'ja-JP-Neural2-B'
 const MAX_TTS_CHARS = 200
 const TTS_STORAGE_KEY = 'flashcard:tts-enabled'
+const AUTO_NEXT_DELAY_MS = 400
+const AUTO_REVEAL_DELAY_MS = 3000
 
 let ttsAudio: HTMLAudioElement | null = null
 let ttsAudioUrl: string | null = null
 let ttsAbortController: AbortController | null = null
+let ttsSequence = 0
+let revealTimer: number | null = null
+let nextTimer: number | null = null
 
 const ttsEnabled = ref(true)
 
@@ -298,6 +303,16 @@ const base64ToUint8Array = (base64: string) => {
 }
 
 const stopTts = () => {
+  if (revealTimer) {
+    window.clearTimeout(revealTimer)
+    revealTimer = null
+  }
+
+  if (nextTimer) {
+    window.clearTimeout(nextTimer)
+    nextTimer = null
+  }
+
   if (ttsAbortController) {
     ttsAbortController.abort()
     ttsAbortController = null
@@ -315,7 +330,7 @@ const stopTts = () => {
   }
 }
 
-const speakQuestion = async (text: string) => {
+const speakQuestion = async (text: string, onEnded?: () => void) => {
   if (!ttsEnabled.value) return
   if (!authStore.currentUser) return
 
@@ -326,6 +341,7 @@ const speakQuestion = async (text: string) => {
 
   stopTts()
   ttsAbortController = new AbortController()
+  const sequenceId = ++ttsSequence
 
   try {
     const token = await authStore.currentUser.getIdToken()
@@ -361,6 +377,9 @@ const speakQuestion = async (text: string) => {
         URL.revokeObjectURL(ttsAudioUrl)
         ttsAudioUrl = null
       }
+      if (sequenceId === ttsSequence) {
+        onEnded?.()
+      }
     }
 
     await ttsAudio.play().catch((error) => {
@@ -382,10 +401,42 @@ watch(
       stopTts()
       return
     }
-    void speakQuestion(word.question)
+    const wordId = word.id
+    void speakQuestion(word.question, () => {
+      if (!ttsEnabled.value) return
+      revealTimer = window.setTimeout(() => {
+        revealTimer = null
+        if (!ttsEnabled.value) return
+        if (!currentWord.value || currentWord.value.id !== wordId) return
+        if (showAnswer.value) return
+        showAnswer.value = true
+      }, AUTO_REVEAL_DELAY_MS)
+    })
   },
   { immediate: true }
 )
+
+const revealAnswer = () => {
+  showAnswer.value = true
+}
+
+watch(showAnswer, (visible) => {
+  if (!visible || !ttsEnabled.value) return
+  const word = currentWord.value
+  if (!word?.answer) return
+  const wordId = word.id
+  void speakQuestion(word.answer, () => {
+    if (!ttsEnabled.value) return
+    nextTimer = window.setTimeout(() => {
+      nextTimer = null
+      if (!ttsEnabled.value) return
+      if (!currentWord.value || currentWord.value.id !== wordId) return
+      showAnswer.value = false
+      showHint.value = false
+      flashcardStore.nextWord()
+    }, AUTO_NEXT_DELAY_MS)
+  })
+})
 
 watch(ttsEnabled, (enabled) => {
   localStorage.setItem(TTS_STORAGE_KEY, String(enabled))
@@ -534,10 +585,11 @@ onBeforeUnmount(() => {
 
 .header-text {
   text-align: center;
+  width: 100%;
 }
 
 .header-side {
-  min-width: 160px;
+  min-width: 120px;
   display: flex;
   align-items: center;
 }
@@ -560,6 +612,9 @@ h1 {
   font-size: 0.9rem;
   color: #666;
   margin: 2px 0 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .flashcard {
@@ -814,6 +869,10 @@ li {
 }
 
 @media (max-width: 600px) {
+  .header-side {
+    min-width: 96px;
+  }
+
   h1 {
     font-size: 1.2rem;
   }
