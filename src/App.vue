@@ -40,12 +40,13 @@ const navigateTo = (name: string) => {
 
       <v-menu>
         <template v-slot:activator="{ props }">
-          <v-btn variant="text" v-bind="props" prepend-icon="mdi-account-circle">
-            {{ authStore.currentUser?.email || 'ユーザー' }}
-          </v-btn>
+          <v-btn variant="text" v-bind="props" icon="mdi-account-circle"></v-btn>
         </template>
 
         <v-list>
+          <v-list-item prepend-icon="mdi-email" disabled>
+            <v-list-item-title>{{ authStore.currentUser?.email || 'ユーザー' }}</v-list-item-title>
+          </v-list-item>
           <v-list-item @click="logout" prepend-icon="mdi-logout">
             <v-list-item-title>ログアウト</v-list-item-title>
           </v-list-item>

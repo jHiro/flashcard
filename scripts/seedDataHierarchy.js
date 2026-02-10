@@ -95,6 +95,15 @@ const parentCategories = [
     description: '各種スポーツのルールや基礎知識',
     isParent: true,
     order: 8,
+  },
+  {
+    id: 'parent_culture',
+    name: 'カルチャー',
+    subject: 'その他',
+    level: '一般',
+    description: '文学・芸術・文化作品に関する基礎知識',
+    isParent: true,
+    order: 9,
   }
 ];
 
@@ -282,6 +291,16 @@ const childCategories = [
     subject: 'その他',
     level: '一般',
     description: '聖闘士星矢のキャラクター、技、設定などマニア向けの知識',
+  },
+
+  // カルチャーの子カテゴリ
+  {
+    id: 'culture_novel',
+    parentId: 'parent_culture',
+    name: 'カルチャー - 小説',
+    subject: 'その他',
+    level: '一般',
+    description: '小説・文芸作品のあらすじや特徴からタイトルを学ぶ',
   },
 ];
 
@@ -3680,6 +3699,134 @@ const words = [
     answer: 'put on',
     hint: 'putとonの組み合わせ',
     examples: ['Put on your coat.', 'put on a hat'],
+  },
+
+  // ===== カルチャー - 小説 (18問) =====
+  {
+    categoryId: 'culture_novel',
+    question: '戦乱の世で“戦の神”をめぐり思惑が交錯し、少年が出生の秘密と向き合う。信仰と権力が揺らぐ中、真実へ近づく物語。（著者: 今村翔吾）',
+    answer: 'イクサガミ',
+    hint: '戦乱と信仰の物語',
+    examples: ['戦の神', '出生の秘密', '真実への道'],
+  },
+  {
+    categoryId: 'culture_novel',
+    question: '荒木村重の籠城中、城内で不可解な事件が続発する。囚われの黒田官兵衛とともに真相を探る歴史ミステリ。（著者: 米澤穂信）',
+    answer: '黒牢城',
+    hint: '著者: 米澤穂信',
+    examples: ['籠城', '推理劇', '歴史とミステリ'],
+  },
+  {
+    categoryId: 'culture_novel',
+    question: '小さなパン屋に漂う“謎の香り”をきっかけに、町の秘密が少しずつ明らかになる。日常の温かさと小さな謎が混ざる物語。（著者: 土屋うさぎ）',
+    answer: '謎の香りはパン屋から',
+    hint: 'パン屋と謎',
+    examples: ['日常の謎', '町の秘密', '温かさ'],
+  },
+  {
+    categoryId: 'culture_novel',
+    question: '江戸の芝居小屋を舞台に、若い役者が父の仇討ちを胸に秘めて生きる。華やかな舞台裏で真実が姿を現す。（著者: 山本一力）',
+    answer: '木挽町のあだ討ち',
+    hint: '著者: 山本一力',
+    examples: ['芝居小屋', '仇討ち', '舞台裏'],
+  },
+  {
+    categoryId: 'culture_novel',
+    question: '金環日食の日を軸に、複数の人物の人生が思いがけず交差する。光と影のように問題が浮かび上がる群像劇。（著者: 阿部暁子）',
+    answer: '金環日蝕',
+    hint: '天体現象と群像劇',
+    examples: ['人生の交差', '光と影', '金環日食'],
+  },
+  {
+    categoryId: 'culture_novel',
+    question: '過酷な環境で育った少年が、希望の象徴を胸に未来を切り開こうとする。仲間との出会いが運命に抗う力を与える。（著者: 湊かなえ）',
+    answer: '暁星',
+    hint: '希望の象徴',
+    examples: ['成長物語', '仲間', '未来を切り開く'],
+  },
+  {
+    categoryId: 'culture_novel',
+    question: '誰にも届かない“52ヘルツ”の声を持つクジラになぞらえ、孤独を抱えた女性が少年と出会う。静かに再生が描かれる。（著者: 町田そのこ）',
+    answer: '52ヘルツのクジラ',
+    hint: '著者: 町田そのこ',
+    examples: ['孤独', '再生', '静かな筆致'],
+  },
+  {
+    categoryId: 'culture_novel',
+    question: '夏の田舎で起きた出来事が、少年の心に深い影を落とす。蝉の声のように忘れられない記憶がよみがえる。（著者: 櫻田智也）',
+    answer: '蝉かえる',
+    hint: '夏の記憶',
+    examples: ['成長', '喪失', '田舎の夏'],
+  },
+  {
+    categoryId: 'culture_novel',
+    question: '婚活にのめり込む女性が、理想と現実のギャップに苦しみ迷走する。“幸せとは何か”を鋭く問う。（著者: 山本文緒）',
+    answer: '婚活中毒',
+    hint: '著者: 山本文緒',
+    examples: ['理想と現実', '迷走', '問いかけ'],
+  },
+  {
+    categoryId: 'culture_novel',
+    question: '定年を迎えた男性が“暇”と“喪失感”に戸惑い、第二の人生を模索する。リアルとユーモアが交錯する。（著者: 内館牧子）',
+    answer: '終わった人',
+    hint: '著者: 内館牧子',
+    examples: ['定年', '第二の人生', 'ユーモア'],
+  },
+  {
+    categoryId: 'culture_novel',
+    question: '刑務所内の美容室で働く女性たちが、髪を通して過去と向き合う。閉ざされた空間での小さな交流が心をほどく。（著者: 桜井美奈）',
+    answer: '塀の中の美容室',
+    hint: '罪と再生',
+    examples: ['刑務所', '交流', '過去と向き合う'],
+  },
+  {
+    categoryId: 'culture_novel',
+    question: '連続誘拐事件を追う刑事が、過去の未解決事件と向き合いながら真相に迫る。静かに積み重なる罪と後悔が陰影を落とす。（著者: 柚月裕子）',
+    answer: '慈雨',
+    hint: '著者: 柚月裕子',
+    examples: ['誘拐事件', '後悔と罪', '警察小説'],
+  },
+  {
+    categoryId: 'culture_novel',
+    question: '沖縄の戦後を背景に、少年たちが“英雄”と呼ばれた男の失踪の謎を追う。島の歴史と痛みが浮かび上がる。（著者: 真藤順丈）',
+    answer: '宝島',
+    hint: '著者: 真藤順丈',
+    examples: ['沖縄戦後', '失踪の謎', '青春と島'],
+  },
+  {
+    categoryId: 'culture_novel',
+    question: '古本屋兼食堂を訪れる人々が、本と料理を通して心を癒やす。店主との会話が人生に小さな変化をもたらす。（著者: 原田ひ香）',
+    answer: '古本食堂',
+    hint: '本と料理',
+    examples: ['癒やし', '会話', '連作短編集'],
+  },
+  {
+    categoryId: 'culture_novel',
+    question: '父の死の謎を追う少女が、家族の秘密と自分の心の“氷”に向き合う。ミステリと成長が溶け合う青春物語。（著者: 辻村深月）',
+    answer: '氷のくじら',
+    hint: '著者: 辻村深月',
+    examples: ['家族の秘密', '心の氷', '青春ミステリ'],
+  },
+  {
+    categoryId: 'culture_novel',
+    question: '夫婦がついた小さな嘘が、やがて取り返しのつかない事態へ発展する。互いを守る嘘が信頼を揺るがす。（著者: 一雫ライオン）',
+    answer: '二人の嘘',
+    hint: '心理サスペンス',
+    examples: ['夫婦', '小さな嘘', '信頼の崩壊'],
+  },
+  {
+    categoryId: 'culture_novel',
+    question: '破天荒な人物たちが巻き起こす騒動が、常識を軽々と飛び越える。予測不能な展開が笑いと驚きを生む。（著者: 染井為人）',
+    answer: '無茶苦茶',
+    hint: '痛快小説',
+    examples: ['破天荒', '騒動', 'ユーモア'],
+  },
+  {
+    categoryId: 'culture_novel',
+    question: '息子が事件の容疑者となり、父親が真相を追いながら“罪”と“親子”の意味に向き合う。正義と家族の絆が交錯する。（著者: 薬丸岳）',
+    answer: 'Aではない君と',
+    hint: '著者: 薬丸岳',
+    examples: ['父と息子', '罪と正義', '家族の絆'],
   },
 ];
 

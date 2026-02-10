@@ -3,21 +3,6 @@
     <v-container class="pa-0" fluid>
       <v-row class="mb-1 align-center ma-0">
         <v-col cols="auto">
-          <v-btn 
-            color="secondary" 
-            variant="tonal" 
-            @click="goBack"
-            icon="mdi-arrow-left"
-          >
-          </v-btn>
-        </v-col>
-        <v-col>
-          <div class="header-text">
-            <h1>{{ currentCategory?.name }}</h1>
-            <p v-if="currentWord" class="subtitle">カード {{ currentWordIndex + 1 }} / {{ currentWords.length }}</p>
-          </div>
-        </v-col>
-        <v-col cols="auto">
           <v-btn
             v-if="currentWordIndex > 0"
             color="warning"
@@ -27,6 +12,31 @@
           >
           </v-btn>
           <div v-else style="width: 40px;"></div>
+        </v-col>
+        <v-col cols="auto" class="d-flex align-center">
+          <v-switch
+            v-model="ttsEnabled"
+            label="音声"
+            color="primary"
+            density="compact"
+            hide-details
+            inset
+          ></v-switch>
+        </v-col>
+        <v-col>
+          <div class="header-text">
+            <h1>{{ currentCategory?.name }}</h1>
+            <p v-if="currentWord" class="subtitle">カード {{ currentWordIndex + 1 }} / {{ currentWords.length }}</p>
+          </div>
+        </v-col>
+        <v-col cols="auto">
+          <v-btn
+            color="secondary"
+            variant="tonal"
+            @click="goBack"
+          >
+            終了
+          </v-btn>
         </v-col>
       </v-row>
 
@@ -211,7 +221,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, watch } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFlashcardStore } from '@/stores/flashcard'
 import { useAuthStore } from '@/stores/auth'
@@ -223,6 +233,18 @@ const router = useRouter()
 const showAnswer = ref(false)
 const showHint = ref(false)
 const isSaving = ref(false)
+
+const TTS_ENDPOINT = import.meta.env.VITE_TTS_FUNCTION_URL || '/api/tts'
+const TTS_LANGUAGE_CODE = 'ja-JP'
+const TTS_VOICE_NAME = 'ja-JP-Neural2-B'
+const MAX_TTS_CHARS = 200
+const TTS_STORAGE_KEY = 'flashcard:tts-enabled'
+
+let ttsAudio: HTMLAudioElement | null = null
+let ttsAudioUrl: string | null = null
+let ttsAbortController: AbortController | null = null
+
+const ttsEnabled = ref(true)
 
 // 現在のセッションの結果を追跡
 const sessionAnswers = ref<Record<string, boolean>>({})
@@ -275,6 +297,114 @@ watch(currentWordIndex, () => {
   showHint.value = false
 })
 
+const base64ToUint8Array = (base64: string) => {
+  const binary = atob(base64)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i)
+  }
+  return bytes
+}
+
+const stopTts = () => {
+  if (ttsAbortController) {
+    ttsAbortController.abort()
+    ttsAbortController = null
+  }
+
+  if (ttsAudio) {
+    ttsAudio.pause()
+    ttsAudio.currentTime = 0
+    ttsAudio = null
+  }
+
+  if (ttsAudioUrl) {
+    URL.revokeObjectURL(ttsAudioUrl)
+    ttsAudioUrl = null
+  }
+}
+
+const speakQuestion = async (text: string) => {
+  if (!ttsEnabled.value) return
+  if (!authStore.currentUser) return
+
+  const trimmed = text.trim()
+  if (!trimmed) return
+
+  const safeText = trimmed.slice(0, MAX_TTS_CHARS)
+
+  stopTts()
+  ttsAbortController = new AbortController()
+
+  try {
+    const token = await authStore.currentUser.getIdToken()
+    const response = await fetch(TTS_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        text: safeText,
+        languageCode: TTS_LANGUAGE_CODE,
+        voiceName: TTS_VOICE_NAME,
+      }),
+      signal: ttsAbortController.signal,
+    })
+
+    if (!response.ok) {
+      console.warn('TTS request failed:', response.status)
+      return
+    }
+
+    const data = await response.json()
+    if (!data?.audioContent) return
+
+    const bytes = base64ToUint8Array(data.audioContent)
+    const blob = new Blob([bytes], { type: 'audio/mpeg' })
+    ttsAudioUrl = URL.createObjectURL(blob)
+    ttsAudio = new Audio(ttsAudioUrl)
+
+    ttsAudio.onended = () => {
+      if (ttsAudioUrl) {
+        URL.revokeObjectURL(ttsAudioUrl)
+        ttsAudioUrl = null
+      }
+    }
+
+    await ttsAudio.play().catch((error) => {
+      console.warn('TTS playback blocked:', error)
+    })
+  } catch (error: any) {
+    if (error?.name !== 'AbortError') {
+      console.warn('TTS error:', error)
+    }
+  } finally {
+    ttsAbortController = null
+  }
+}
+
+watch(
+  currentWord,
+  (word) => {
+    if (!ttsEnabled.value || !word?.question) {
+      stopTts()
+      return
+    }
+    void speakQuestion(word.question)
+  },
+  { immediate: true }
+)
+
+watch(ttsEnabled, (enabled) => {
+  localStorage.setItem(TTS_STORAGE_KEY, String(enabled))
+  if (enabled && currentWord.value?.question) {
+    void speakQuestion(currentWord.value.question)
+  } else {
+    stopTts()
+  }
+})
+
 const handleAnswer = async (isCorrect: boolean) => {
   if (!authStore.currentUser || !currentCategory.value || !currentWord.value) {
     console.error('❌ 必要なデータが不足しています:', {
@@ -323,6 +453,7 @@ const handleAnswer = async (isCorrect: boolean) => {
 }
 
 const goBack = () => {
+  stopTts()
   router.back()
 }
 
@@ -387,9 +518,18 @@ const saveWrongWords = async () => {
 }
 
 onMounted(() => {
+  const stored = localStorage.getItem(TTS_STORAGE_KEY)
+  if (stored === 'true' || stored === 'false') {
+    ttsEnabled.value = stored === 'true'
+  }
+
   if (!currentCategory.value) {
     router.push({ name: 'home' })
   }
+})
+
+onBeforeUnmount(() => {
+  stopTts()
 })
 </script>
 
