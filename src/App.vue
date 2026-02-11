@@ -66,6 +66,23 @@ const navigateTo = (name: string) => {
   align-items: center;
   gap: 8px;
   font-weight: bold;
+  max-width: none;
+  flex: 0 0 auto;
+}
+
+.app-bar-title :deep(.v-app-bar-title__content) {
+  width: auto;
+  overflow: visible;
+  text-overflow: clip;
+  max-width: none;
+}
+
+.app-bar-title :deep(.v-toolbar-title__content),
+.app-bar-title :deep(.v-toolbar-title__placeholder) {
+  overflow: visible;
+  text-overflow: clip;
+  max-width: none;
+  flex: 0 0 auto;
 }
 
 .title-icon {
@@ -74,5 +91,6 @@ const navigateTo = (name: string) => {
 
 .title-text {
   font-size: 1.25rem;
+  white-space: nowrap;
 }
 </style>
