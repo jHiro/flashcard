@@ -20,23 +20,37 @@
           </div>
         </v-col>
         <v-col cols="auto" class="header-side header-controls">
-          <v-switch
-            v-model="ttsEnabled"
-            label="音声"
-            color="primary"
-            density="compact"
-            hide-details
-            inset
-          ></v-switch>
-          <v-switch
-            v-model="autoNextEnabled"
-            label="自動送り"
-            color="primary"
-            density="compact"
-            hide-details
-            inset
-            :disabled="!ttsEnabled"
-          ></v-switch>
+          <v-tooltip text="音声ON/OFF">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                icon
+                size="small"
+                color="primary"
+                :variant="ttsEnabled ? 'tonal' : 'text'"
+                :aria-label="ttsEnabled ? '音声をオフにする' : '音声をオンにする'"
+                @click="ttsEnabled = !ttsEnabled"
+              >
+                <v-icon>{{ ttsEnabled ? 'mdi-volume-high' : 'mdi-volume-off' }}</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+          <v-tooltip text="自動送りON/OFF">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                icon
+                size="small"
+                :color="autoNextEnabled ? 'success' : 'grey'"
+                :variant="autoNextEnabled ? 'tonal' : 'text'"
+                :disabled="!ttsEnabled"
+                :aria-label="autoNextEnabled ? '自動送りをオフにする' : '自動送りをオンにする'"
+                @click="autoNextEnabled = !autoNextEnabled"
+              >
+                <v-icon>{{ autoNextEnabled ? 'mdi-run-fast' : 'mdi-pause-circle-outline' }}</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
         </v-col>
       </v-row>
 
